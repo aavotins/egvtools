@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# egvtools
+# egvtools: High-resolution Ecogeographical Variable Workflows
 
 <!-- badges: start -->
 
@@ -12,7 +12,19 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 coverage](https://codecov.io/gh/aavotins/egvtools/graph/badge.svg)](https://app.codecov.io/gh/aavotins/egvtools)
 <!-- badges: end -->
 
-The goal of egvtools is to …
+`egvtools` provides a coherent set of wrappers and utilities that make
+large-scale **EGV** creation reproducible and pleasant on real datasets.
+The package leans on robust building blocks—`terra`, `sf`, `sfarrow`,
+`exactextractr`, and `whitebox`—and standardizes I/O, naming
+conventions, and multi-scale zonal statistics so your pipelines are
+repeatable across machines and projects.
+
+The package was developed to simply our work in project “HiQBioDiv:
+High-resolution quantification of biodiversity for conservation and
+management” funded by the Latvian Council of Science (Ref.
+No. VPP-VARAM-DABA-2024/1-0002) and to ease reproduction of our work.
+Five of the functions are strictly for replication, while others are
+useful for wider audience (see documentation and [articles]()).
 
 ## Installation
 
@@ -26,36 +38,12 @@ pak::pak("aavotins/egvtools")
 
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+There will be example here. Soon.
 
 ``` r
 library(egvtools)
 ## basic example code
 ```
-
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
-
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
 
 ## Code of Conduct
 
