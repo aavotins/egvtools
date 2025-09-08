@@ -94,7 +94,7 @@
 #'   plot_result    = TRUE
 #' )
 #' print(res_tbl)
-#' 
+#'
 #' #' ## --- Total edge length per zone (ignore outside map boundary) ---
 #' ## Using a binary "water vs other" landscape, compute lsm_l_te per 500 m zone.
 #' rez_edges <- landscape_function(
@@ -130,7 +130,7 @@
 #' @importFrom fs path
 #' @importFrom tools file_ext
 #' @importFrom utils capture.output modifyList
-#' @importFrom future plan sequential multiprocess multisession multicore cluster
+#' @importFrom future plan sequential multisession multicore cluster
 #' @importFrom furrr furrr_options future_imap
 #' @importFrom raster stack projection raster ncell
 #' @importFrom whitebox wbt_fill_missing_data
@@ -174,18 +174,18 @@ landscape_function <- function(
 ){
   t_start <- Sys.time()
   rasterize_engine <- match.arg(rasterize_engine)
-  
+
   # ---- sink safety
   orig_out <- sink.number(); orig_msg <- sink.number(type = "message")
   on.exit({
     while (sink.number(type = "message") > orig_msg) sink(type = "message")
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
-  
+
   say <- function(...) if (!quiet) cat(..., "\n")
   `%||%` <- function(x, y) if (is.null(x)) y else x
   .maybe_gc <- function() if (isTRUE(force_gc)) gc()
-  
+
   # deps
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -207,7 +207,7 @@ landscape_function <- function(
   .need_pkg("furrr",  "parallel mapping")
   .need_pkg("whitebox",    "gap filling")
 
-  
+
   # terra options (set + restore)
   old_opt <- NULL
   utils::capture.output({ old_opt <- terra::terraOptions() })
@@ -219,7 +219,7 @@ landscape_function <- function(
     terra::terraOptions(memfrac = terra_memfrac, tempdir = terra_tempdir, progress = FALSE)
     if (!is.na(terra_todisk)) terra::terraOptions(todisk = isTRUE(terra_todisk))
   })
-  
+
   # helpers
   load_landscape <- function(x) if (inherits(x,"SpatRaster")) x else terra::rast(x)
   load_zones <- function(z) if (inherits(z,"sf")) z else {
@@ -257,30 +257,30 @@ landscape_function <- function(
     if (dt == "INT4S")        return(-2147483648)
     NA_real_
   }
-  
+
   # inputs & checks
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   r_in <- load_landscape(landscape)
   z_in <- load_zones(zones)
   tmpl <- if (inherits(template,"SpatRaster")) template else terra::rast(template)
-  
+
   if (!id_field   %in% names(z_in)) stop("id_field '", id_field,   "' not found in zones.")
   if (!tile_field %in% names(z_in)) stop("tile_field '", tile_field, "' not found in zones.")
-  
+
   # CRS harmonization (WKT equality)
   tmpl_wkt <- terra::crs(tmpl, proj = TRUE)
   if (!identical(sf::st_crs(z_in)$wkt, tmpl_wkt)) z_in <- sf::st_transform(z_in, tmpl_wkt)
   if (!identical(terra::crs(r_in, proj = TRUE), tmpl_wkt)) r_in <- terra::project(r_in, tmpl, method = "near")
-  
+
   nlyr <- terra::nlyr(r_in)
   if (nlyr==1L) { stopifnot(length(out_filename)==1L, length(out_layername)==1L) } else {
     stopifnot(length(out_filename)==nlyr, length(out_layername)==nlyr)
   }
-  
+
   # tiles & futures
   tile_root <- file.path(out_dir, paste0("tiles_", format(Sys.time(), "%Y%m%d_%H%M%S")))
   dir.create(tile_root, recursive = TRUE, showWarnings = FALSE)
-  
+
   old_plan <- future::plan()
   old_max  <- getOption("future.globals.maxSize")
   options(future.globals.maxSize = future_max_size)
@@ -290,11 +290,11 @@ landscape_function <- function(
     if (!keep_tiles) try(unlink(tile_root, recursive = TRUE, force = TRUE), silent = TRUE)
   }, add = TRUE)
   safe_plan(n_workers = n_workers, os_type = os_type)
-  
+
   landscape_path <- ensure_raster_path(r_in, tile_root, "landscape")
   template_path  <- ensure_raster_path(tmpl,  tile_root, "template")
   tiles_sf <- split(z_in, f = z_in[[tile_field]], drop = TRUE)
-  
+
   layer_counts <- data.frame(
     layer_name = out_layername,
     tiles_written = 0L,
@@ -303,7 +303,7 @@ landscape_function <- function(
     tiles_skipped_empty_join = 0L,
     stringsAsFactors = FALSE
   )
-  
+
   # core tile worker
   process_one_tile <- function(tile_sf_in, tile_id){
     tryCatch({
@@ -311,29 +311,29 @@ landscape_function <- function(
       if (!inherits(tile_sf_in, "sf"))  tile_sf_in <- sf::st_as_sf(tile_sf_in)
       safe_id  <- sanitize_fs(as.character(tile_id))
       if (!quiet) cat("Tile", safe_id, ": start (n=", nrow(tile_sf_in), ")\n", sep = "")
-      
+
       lc <- setNames(as.list(rep(0L, nlyr)), paste0("w_", out_layername))
       se <- setNames(as.list(rep(0L, nlyr)), paste0("se_", out_layername))
       sc <- setNames(as.list(rep(0L, nlyr)), paste0("scrop_", out_layername))
       sj <- setNames(as.list(rep(0L, nlyr)), paste0("sjoin_", out_layername))
-      
+
       expected_files <- file.path(tile_root, paste0("tile_", safe_id, "_", sanitize_fs(out_layername), ".tif"))
       if (isTRUE(skip_existing) && length(expected_files) > 0 && all(file.exists(expected_files))) {
         if (!quiet) cat("Tile", safe_id, ": all per-layer tiles exist; skip compute\n")
         for (i in seq_len(nlyr)) se[[paste0("se_", out_layername[i])]] <- se[[paste0("se_", out_layername[i])]] + 1L
         return(list(lc=lc,se=se,sc=sc,sj=sj))
       }
-      
+
       tile_sf <- sf::st_make_valid(tile_sf_in)
       if (nrow(tile_sf)==0 || all(sf::st_is_empty(tile_sf))) return(list(lc=lc,se=se,sc=sc,sj=sj))
       tile_sf[[id_field]] <- as.character(tile_sf[[id_field]])
-      
+
       r_in  <- terra::rast(landscape_path)
       tmpl  <- terra::rast(template_path)
-      
+
       sv   <- terra::vect(tile_sf); e <- terra::ext(sv)
       ebuf <- terra::ext(e[1]-buffer_m, e[2]+buffer_m, e[3]-buffer_m, e[4]+buffer_m)
-      
+
       tmpl_crop <- try(terra::crop(tmpl, ebuf), silent = TRUE)
       if (inherits(tmpl_crop,"try-error") || is.null(tmpl_crop) || terra::ncell(tmpl_crop)==0L) {
         for (i in seq_len(nlyr)) sc[[paste0("scrop_", out_layername[i])]] <- sc[[paste0("scrop_", out_layername[i])]] + 1L
@@ -344,16 +344,16 @@ landscape_function <- function(
         for (i in seq_len(nlyr)) sc[[paste0("scrop_", out_layername[i])]] <- sc[[paste0("scrop_", out_layername[i])]] + 1L
         return(list(lc=lc,se=se,sc=sc,sj=sj))
       }
-      
+
       r_crop_path <- file.path(tile_root, paste0("landscape_", safe_id, ".tif"))
       terra::writeRaster(r_crop, r_crop_path, overwrite = TRUE)
       r_crop_r <- raster::stack(r_crop_path)
-      
+
       crs_proj4 <- terra::crs(r_crop, proj = FALSE)
       if (!is.null(crs_proj4) && !is.na(crs_proj4) && nzchar(crs_proj4)) raster::projection(r_crop_r) <- crs_proj4
       tile_sp <- methods::as(tile_sf, "Spatial")
       if (!is.null(crs_proj4) && !is.na(crs_proj4) && nzchar(crs_proj4)) suppressWarnings(sp::proj4string(tile_sp) <- crs_proj4)
-      
+
       base_args <- list(landscape = r_crop_r, y = tile_sp,
                         plot_id = as.character(tile_sf[[id_field]]), what = what)
       call_args <- if (is.null(lm_args)) base_args else utils::modifyList(base_args, lm_args, keep.null = TRUE)
@@ -364,17 +364,17 @@ landscape_function <- function(
       }
       lsm_tb$value[is.na(lsm_tb$value)] <- 0
       layer_vec <- if ("layer" %in% names(lsm_tb)) sort(unique(lsm_tb$layer)) else 1L
-      
+
       dt_out <- safe_datatype(write_datatype)
       na_out <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_out) else NAflag
-      
+
       for (li in layer_vec) {
         sub_tb <- if (length(layer_vec)==1L && !("layer" %in% names(lsm_tb))) lsm_tb else dplyr::filter(lsm_tb, .data$layer==!!li)
         lyr_index <- if (length(layer_vec)==1L && !("layer" %in% names(lsm_tb))) 1L else li
         lyr_name  <- out_layername[lyr_index]
         safe_lyr  <- sanitize_fs(lyr_name)
         lyr_file  <- file.path(tile_root, paste0("tile_", safe_id, "_", safe_lyr, ".tif"))
-        
+
         join_df <- tibble::tibble(!!id_field := as.character(sub_tb$plot_id), value = sub_tb$value)
         tile_sf_val <- dplyr::left_join(
           dplyr::mutate(tile_sf, !!id_field := as.character(.data[[id_field]])),
@@ -384,12 +384,12 @@ landscape_function <- function(
           sj[[paste0("sjoin_", lyr_name)]] <- sj[[paste0("sjoin_", lyr_name)]] + 1L
           next
         }
-        
+
         if (isTRUE(skip_existing) && file.exists(lyr_file)) {
           se[[paste0("se_", lyr_name)]] <- se[[paste0("se_", lyr_name)]] + 1L
           next
         }
-        
+
         rr <- NULL
         if (identical(rasterize_engine, "fasterize") && requireNamespace("fasterize", quietly = TRUE)) {
           e    <- as.vector(terra::ext(tmpl_crop)); rres <- terra::res(tmpl_crop)
@@ -412,21 +412,21 @@ landscape_function <- function(
           svv <- terra::vect(tile_sf_val)
           rr  <- try(terra::rasterize(x = svv, y = tmpl_crop, field = "value", fun = "mean", background = NA_real_), silent = TRUE)
         }
-        
+
         if (!valid_spat(rr)) {
           sc[[paste0("scrop_", lyr_name)]] <- sc[[paste0("scrop_", lyr_name)]] + 1L
           next
         }
         names(rr) <- lyr_name
         rr <- terra::mask(rr, tmpl_crop)
-        
+
         terra::writeRaster(rr, filename = lyr_file, overwrite = TRUE,
                            gdal = gdal_opts, datatype = dt_out, NAflag = na_out)
         lc[[paste0("w_", lyr_name)]] <- lc[[paste0("w_", lyr_name)]] + 1L
       }
-      
+
       list(lc=lc,se=se,sc=sc,sj=sj)
-      
+
     }, error = function(e){
       if (!quiet) cat("Tile", as.character(tile_id), ": hard error ->", conditionMessage(e), "\n")
       list(
@@ -437,11 +437,11 @@ landscape_function <- function(
       )
     })
   }
-  
+
   furrr_opts <- furrr::furrr_options(seed = TRUE, globals = FALSE)
   tile_stats <- furrr::future_imap(tiles_sf, ~process_one_tile(.x, .y),
                                    .options = furrr_opts, .progress = !quiet)
-  
+
   # aggregate tile counters
   for (ts in tile_stats) {
     if (is.null(ts)) next
@@ -453,7 +453,7 @@ landscape_function <- function(
       layer_counts$tiles_skipped_empty_join[i] <- layer_counts$tiles_skipped_empty_join[i] + (ts$sj[[paste0("sjoin_", ln)]]%||% 0L)
     }
   }
-  
+
   # per-layer outputs & gap stats
   all_tile_files <- list.files(tile_root, pattern="\\.tif$", full.names=TRUE)
   outputs <- setNames(rep(NA_character_, nlyr), out_layername)
@@ -462,45 +462,45 @@ landscape_function <- function(
   max_gap_vec   <- rep(NA_real_, nlyr)
   fs_used_vec   <- rep(NA_integer_, nlyr)
   gap_filled_vec<- rep(FALSE, nlyr)
-  
+
   def_opts <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
   gdal_final <- unique(c(gdal_opts, def_opts))
   dt_final   <- safe_datatype(write_datatype)
   na_final   <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_final) else NAflag
   if (startsWith(dt_final, "FLT") && !any(grepl("^PREDICTOR=", gdal_final))) gdal_final <- c(gdal_final, "PREDICTOR=2")
-  
+
   for (i in seq_len(nlyr)) {
     lyr_name   <- out_layername[i]
     safe_lyr   <- sanitize_fs(lyr_name)
     final_path <- file.path(out_dir, out_filename[i])
-    
+
     lyr_paths <- all_tile_files[stringr::str_detect(
       all_tile_files, paste0("_", stringr::fixed(safe_lyr), "\\.tif$")
     )]
-    if (length(lyr_paths) == 0) { 
+    if (length(lyr_paths) == 0) {
       outputs[[lyr_name]] <- final_path
-      next 
+      next
     }
-    
+
     if (isTRUE(skip_existing) && file.exists(final_path)) {
       merge_skipped[[lyr_name]] <- TRUE
       outputs[[lyr_name]] <- final_path
       next
     }
-    
+
     # --- merge tiles to a VRT, tag CRS
     vrt <- terra::vrt(lyr_paths); names(vrt) <- lyr_name
     terra::crs(vrt) <- tmpl_wkt
-    
+
     # --- write the raw mosaic to a tmp (same dtype/opts as final)
     ext  <- tools::file_ext(final_path); ext <- if (nzchar(ext)) ext else "tif"
     stem <- sub(sprintf("\\.%s$", ext), "", final_path)
     tmp_merge <- sprintf("%s._merge.%s", stem, ext)
     if (file.exists(tmp_merge)) try(unlink(tmp_merge), silent = TRUE)
-    
+
     terra::writeRaster(vrt, filename = tmp_merge, overwrite = TRUE,
                        gdal = gdal_final, datatype = dt_final, NAflag = na_final)
-    
+
     # --- ALIGN to the *full* template grid (handles buffer around presence)
     r_mos <- terra::rast(tmp_merge)
     r_aln <- if (terra::same.crs(r_mos, tmpl)) {
@@ -519,7 +519,7 @@ landscape_function <- function(
       )
     }
     terra::crs(r_aln) <- tmpl_wkt  # ensure exact WKT equality
-    
+
     # --- GAP ANALYSIS (extents match template)
     gaps <- is.na(r_aln) & !is.na(tmpl)
     gap_count <- if (isTRUE(report_gaps) || isTRUE(report_gap_size) ||
@@ -527,7 +527,7 @@ landscape_function <- function(
       terra::global(gaps, fun = "sum", na.rm = TRUE)[[1]]
     } else NA_real_
     max_gap <- NA_real_
-    
+
     if (!is.na(gap_count) && gap_count > 0 &&
         (isTRUE(report_gap_size) || (isTRUE(fill_gaps) && identical(filter_size_cells, "auto")))) {
       data_mask <- terra::ifel(gaps, NA, 1)
@@ -535,10 +535,10 @@ landscape_function <- function(
       max_gap <- terra::global(dist_r, fun = "max", na.rm = TRUE)[[1]]
       rm(dist_r); .maybe_gc()
     }
-    
+
     if (isTRUE(report_gaps))     say(sprintf("[%s] Gap cells (inside template): %s", lyr_name, format(gap_count, big.mark=",")))
     if (isTRUE(report_gap_size) && !is.na(max_gap)) say(sprintf("[%s] Maximum gap width: %.3f (template units)", lyr_name, max_gap))
-    
+
     # --- Optional Whitebox IDW fill (on the aligned, template-sized grid)
     fs_used <- NA_integer_
     if (isTRUE(fill_gaps) && !is.na(gap_count) && gap_count > 0) {
@@ -554,7 +554,7 @@ landscape_function <- function(
           fs_used <- max(3L, as.integer(filter_size_cells))
           if (fs_used %% 2 == 0) fs_used <- fs_used + 1
         }
-        
+
         tmp_in  <- tempfile(fileext = ".tif")
         tmp_fill<- tempfile(fileext = ".tif")
         terra::writeRaster(r_aln, filename = tmp_in, overwrite = TRUE,
@@ -582,18 +582,18 @@ landscape_function <- function(
         unlink(c(tmp_in, tmp_fill), force = TRUE)
       }
     }
-    
+
     # --- plots (use aligned raster) ---
     if ((isTRUE(plot_result) || isTRUE(plot_gaps)) && interactive()) {
       oldpar <- graphics::par(no.readonly = TRUE); on.exit(graphics::par(oldpar), add = TRUE)
-      
+
       two_panels <- isTRUE(plot_result) && isTRUE(plot_gaps)
       if (two_panels) graphics::par(mfrow = c(1, 2))
-      
+
       if (isTRUE(plot_result)) {
         terra::plot(r_aln, main = paste0("landscape_function: ", lyr_name))
       }
-      
+
       if (isTRUE(plot_gaps)) {
         if (!is.na(gap_count) && gap_count > 0) {
           # real gap map (1 = gap inside template)
@@ -607,7 +607,7 @@ landscape_function <- function(
         }
       }
     }
-    
+
     # --- final write (atomic)
     tmp_final <- sprintf("%s._tmp.%s", stem, ext)
     if (file.exists(tmp_final)) try(unlink(tmp_final), silent = TRUE)
@@ -617,17 +617,17 @@ landscape_function <- function(
     if (file.exists(final_path)) try(unlink(final_path), silent = TRUE)
     file.rename(tmp_final, final_path)
     outputs[[lyr_name]] <- final_path
-    
+
     # record stats
     gap_count_vec[i] <- gap_count
     max_gap_vec[i]   <- max_gap
     fs_used_vec[i]   <- fs_used
-    
+
     # cleanup the merged mosaic file (keep only the aligned final)
     if (file.exists(tmp_merge)) try(unlink(tmp_merge), silent = TRUE)
   }
-  
-  
+
+
   elapsed_sec <- as.numeric(difftime(Sys.time(), t_start, units = "secs"))
   df <- data.frame(
     layer_name               = out_layername,
@@ -647,7 +647,7 @@ landscape_function <- function(
     elapsed_sec              = elapsed_sec,
     stringsAsFactors = FALSE
   )
-  
+
   attr(df, "tile_dir") <- if (keep_tiles) tile_root else NULL
   attr(df, "run_params") <- list(
     what = what, lm_args = lm_args, rasterize_engine = rasterize_engine,
@@ -659,6 +659,6 @@ landscape_function <- function(
     fill_gaps = fill_gaps, idw_weight = idw_weight, filter_size_cells = filter_size_cells,
     terra_memfrac = terra_memfrac, terra_tempdir = terra_tempdir, terra_todisk = terra_todisk
   )
-  
+
   df
 }
