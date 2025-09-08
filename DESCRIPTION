@@ -1,0 +1,13 @@
+Package: egvtools
+Title: High‑resolution Ecogeographical Variables Toolkit
+Version: 0.0.0.9000
+Authors@R: 
+    person("Andris", "Avotiņš", , "andris.avotins@lu.lv", role = c("aut", "cre"))
+Description: Helpers for reproducible geospatial workflows to create
+    harmonised ecogeographical variables: terra/sf/sfarrow IO, tiling,
+    extraction and zonal statistics, and gap‑filling utilities.
+License: MIT
+Encoding: UTF-8
+Language: en
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
