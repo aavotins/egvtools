@@ -1,0 +1,54 @@
+url: https://aavotins.github.io/egvtools/
+template:
+  bootstrap: 5
+
+repo:
+  url:
+    home:   https://github.com/aavotins/egvtools/
+    source: https://github.com/aavotins/egvtools/blob/HEAD/
+    issue:  https://github.com/aavotins/egvtools/issues/
+    user:   https://github.com/
+  branch: master
+
+navbar:
+  structure:
+    left:  [reference, articles, news]
+    right: [github]
+  components:
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      href: articles/index.html
+    news:
+      text: Changelog
+      href: news/index.html
+    github:
+      icon: fab fa-github
+      href: https://github.com/aavotins/egvtools
+
+reference:
+  - title: Core workflow
+    desc: Generalizable EGV creators/wrappers
+    contents:
+      - polygon2input
+      - downscale2egv
+      - distance2egv
+      - input2egv
+      - landscape_function
+      - radius_function
+  - title: Reproducibility helpers
+    desc: Inputs, tiling, and reproducible scaffolding
+    contents:
+      - download_raster_templates
+      - download_vector_templates
+      - tile_vector_grid
+      - tiled_buffers
+      - create_backgrounds
+  - title: Internals
+    contents:
+      - has_keyword("internal")
+
+development:
+  mode: auto
