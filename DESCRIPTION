@@ -30,6 +30,8 @@ Imports:
     raster,
     rlang,
     sf,
+    sp,
+    methods,
     sfarrow,
     stringr,
     terra,
