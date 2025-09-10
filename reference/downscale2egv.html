@@ -229,7 +229,7 @@ continuous inputs use <code>"bilinear"</code>.</p>
 <li><p><strong>Fast crop</strong>: transforms the grid bbox to the template CRS, expands by <code>buffer_m</code>,
 crops the raw raster early to minimise work.</p></li>
 <li><p><strong>Method auto-choice</strong>: <code>"near"</code> for integer/factor rasters, otherwise <code>"bilinear"</code>.</p></li>
-<li><p><strong>Align</strong>: <code>terra::project(raw_crop, template, method)</code> → <code>terra::mask(..., template)</code>.</p></li>
+<li><p><strong>Align</strong>: <code>terra::project(raw_crop, template, method)</code> then <code>terra::mask(..., template)</code>.</p></li>
 <li><p><strong>Gaps</strong>: optional internal NA counts on the template footprint only.</p></li>
 <li><p><strong>Gap fill (optional)</strong>: Whitebox <code>wbt_fill_missing_data</code>, with window auto-sized from
 the widest gap (or user <code>filter_size_cells</code>).</p></li>
@@ -241,7 +241,7 @@ output CRS <strong>forced to template WKT/EPSG</strong> so <code>crs(out) == crs
 <li><p><strong>Sink safety &amp; memory</strong>: snapshots/restore sinks (prevents stuck console if interrupted);
 <code>terraOptions(memfrac/tempdir/todisk)</code> set then restored; optional <code><a href="https://rdrr.io/r/base/gc.html" class="external-link">gc()</a></code>.</p></li>
 </ol><p><strong>IDW smoothing</strong>
-Aggregate → points → IDW back to template. Controls:</p><ul><li><p><code>smooth_radius_km</code> search radius (km; converted to template units),</p></li>
+Aggregate to points to IDW back to template. Controls:</p><ul><li><p><code>smooth_radius_km</code> search radius (km; converted to template units),</p></li>
 <li><p><code>smooth_agg_factor</code> aggregation factor before point creation,</p></li>
 <li><p><code>smooth_power</code>, <code>smooth_epsilon</code>, <code>smooth_nmax</code>.
 Set <code>smooth_force=TRUE</code> to allow smoothing of integer/factor rasters (not recommended).</p></li>

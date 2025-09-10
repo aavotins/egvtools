@@ -197,7 +197,7 @@ If <code>is_categorical = TRUE</code>, <code>"near"</code> is enforced.</p></dd>
 <li><p>If <code>missing_job</code> contains <strong>CoverInput</strong>, build <code>input_bg</code> (numeric + <code>input_template</code>, or raster/path)
 and <code><a href="https://rspatial.github.io/terra/reference/cover.html" class="external-link">terra::cover()</a></code> the input.</p></li>
 <li><p><strong>Resample/aggregate</strong> the input to the template with <code>summary_function</code>
-(<code>"mean"</code> → <code>"average"</code>). If <code>is_categorical=TRUE</code> the method is forced to <code>"near"</code>.</p></li>
+(<code>"mean"</code> is linked to <code>"average"</code>). If <code>is_categorical=TRUE</code> the method is forced to <code>"near"</code>.</p></li>
 <li><p>Count <strong>initial gaps</strong> = <code>is.na(aligned) &amp; !is.na(template)</code>.</p></li>
 <li><p>If <code>missing_job</code> contains <strong>CoverOutput</strong>, apply <code><a href="https://rspatial.github.io/terra/reference/cover.html" class="external-link">terra::cover()</a></code> using <code>output_bg</code>.</p></li>
 <li><p>If <code>missing_job</code> contains <strong>FillOutput</strong> <strong>and</strong> <code>!is_categorical</code>,
@@ -210,7 +210,7 @@ and write with LZW/tiling (adds a <code>PREDICTOR</code> appropriate to datatype
 <li><p><code>"CoverOutput"</code>: cover the <strong>resampled</strong> raster (with <code>output_bg</code>).</p></li>
 <li><p><code>"FillOutput"</code>: if gaps remain after resampling, compute a max-gap distance
 (via <code><a href="https://rspatial.github.io/terra/reference/distance.html" class="external-link">terra::distance</a></code>) and call <code><a href="https://whiteboxr.gishub.org/reference/wbt_fill_missing_data.html" class="external-link">whitebox::wbt_fill_missing_data()</a></code> with a filter
-width ≈ <code>2×</code> the maximum gap (in pixels). Only a minimum clamp (<code>&gt;= 3</code>) is applied (no max clamp).</p></li>
+width approx. twice the maximum gap (in pixels). Only a minimum clamp (<code>&gt;= 3</code>) is applied.</p></li>
 <li><p>Combinations: <code>"CoverInput-CoverOutput"</code>, <code>"CoverInput-FillOutput"</code>.</p></li>
 <li><p><code>"none"</code>: do nothing about gaps.</p></li>
 </ul><p><strong>Resampling</strong>:</p><ul><li><p>Default <code>summary_function = "average"</code> (area-preserving). <code>"mean"</code> is mapped to <code>"average"</code>.</p></li>

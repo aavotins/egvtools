@@ -122,7 +122,7 @@ Default <code>"max"</code>.</p></dd>
 
 <dt id="arg-value-type">value_type<a class="anchor" aria-label="anchor" href="#arg-value-type"></a></dt>
 <dd><p>Guides resampling <strong>if projection happens</strong>:
-<code>"categorical"</code> → method <code>"near"</code>, <code>"continuous"</code> → <code>"bilinear"</code>. Default <code>"categorical"</code>.</p></dd>
+<code>"categorical"</code> with method <code>"near"</code>, <code>"continuous"</code> with <code>"bilinear"</code>. Default <code>"categorical"</code>.</p></dd>
 
 
 <dt id="arg-project-mode">project_mode<a class="anchor" aria-label="anchor" href="#arg-project-mode"></a></dt>
@@ -139,7 +139,7 @@ Default <code>"max"</code>.</p></dd>
 
 <dt id="arg-restrict-values">restrict_values<a class="anchor" aria-label="anchor" href="#arg-restrict-values"></a></dt>
 <dd><p>Optional values to keep from <code>restrict_to</code>: numbers (scalar/vector) and/or
-<strong>range strings</strong> using bracket inclusivity, e.g. <code>"(0,5]"</code>, <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR’ed.
+<strong>range strings</strong> using bracket inclusivity, e.g. <code>"(0,5]"</code>, <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR-ed.
 If <code>NULL</code>, keep non-NA cells of <code>restrict_to</code>.</p></dd>
 
 
@@ -220,7 +220,7 @@ If <code>FALSE</code>, prefer memory. If <code>NA</code>, leave session default 
 <li><p>(Optional) <strong>Restrict</strong> by <code>restrict_to</code> (path or in-memory <code>SpatRaster</code>):</p><ul><li><p>If <code>restrict_values</code> is <code>NULL</code>, keep <strong>non-NA</strong> cells of <code>restrict_to</code>.</p></li>
 <li><p>If supplied, keep cells matching <strong>numbers</strong> (scalar/vector) and/or <strong>ranges</strong> using bracket
 syntax: <code>"(a,b)"</code> open; <code>"[a,b]"</code> closed; mix ends like <code>"(a,b]"</code>. Use <code>-inf</code>/<code>+inf</code> for unbounded,
-e.g., <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR’ed.</p></li>
+e.g., <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR-ed.</p></li>
 </ul></li>
 <li><p>(Optional) <strong>Cover</strong> remaining <code>NA</code> cells:</p><ul><li><p>with <code>background_raster</code> (aligned to template; projected if needed), or</p></li>
 <li><p>with a <strong>constant</strong> using <code>background_value</code> (fast and memory-light).</p></li>
@@ -228,12 +228,12 @@ e.g., <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR’e
 <li><p>A <strong>final mask</strong> to the template is applied <strong>before plotting and saving</strong>.</p></li>
 <li><p>NA counts are computed with <code><a href="https://rspatial.github.io/terra/reference/global.html" class="external-link">terra::global()</a></code> on raster masks (memory-safe).</p></li>
 </ol><p><strong>Datatype &amp; NAflag auto-chooser</strong>
-If you do <strong>not</strong> provide <code>write_datatype</code>/<code>NAflag</code>, the function picks:</p><ul><li><p><code>value_type="categorical"</code> → <code>write_datatype="INT2S"</code>, <code>NAflag=-32768</code></p></li>
-<li><p><code>value_type="continuous"</code> → <code>write_datatype="FLT4S"</code>, <code>NAflag</code> omitted
+If you do <strong>not</strong> provide <code>write_datatype</code>/<code>NAflag</code>, the function picks:</p><ul><li><p><code>value_type="categorical"</code> to <code>write_datatype="INT2S"</code>, <code>NAflag=-32768</code></p></li>
+<li><p><code>value_type="continuous"</code> to <code>write_datatype="FLT4S"</code>, <code>NAflag</code> omitted
 You can always override via arguments.</p></li>
 </ul><p><strong>Performance &amp; stability</strong></p><ul><li><p>For very large rasters (e.g., ~1.3B cells), set <code>terra_todisk=TRUE</code> and consider a fast SSD for
-<code>terra_tempdir</code>. This streams big operations to disk and avoids “vector memory limit” errors.</p></li>
-<li><p>Projection is often unnecessary here because rasterization targets the template’s grid; <code>"auto"</code>
+<code>terra_tempdir</code>. This streams big operations to disk and avoids "vector memory limit" errors.</p></li>
+<li><p>Projection is often unnecessary here because rasterization targets the template grid; <code>"auto"</code>
 will detect alignment and skip it.</p></li>
 <li><p>Writes are <strong>atomic</strong>: a temporary file is written and then moved into place.</p></li>
 </ul></div>
@@ -241,7 +241,7 @@ will detect alignment and skip it.</p></li>
     <h2 id="range-string-syntax-for-restrict-values">Range string syntax for restrict_values<a class="anchor" aria-label="anchor" href="#range-string-syntax-for-restrict-values"></a></h2>
 
 
-<p>Use "(a,b)" for open interval, "a,b" for closed; mix ends like "(a,b]". Use -inf/+inf (or inf)
+<p>Use <code>(a,b)</code> for open interval, <code>[a,b]</code> for closed; mix ends like <code>(a,b]</code>. Use -inf/+inf (or inf)
 for unbounded, e.g., "[10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]","[10,15)").</p>
 <p>[10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]: R:10,)%22,%20%22(-inf,0)%22.%20Supply%20multiple%20strings%20to%20OR%20them,%20e.g.,%20c(%22(0,5</p>
     </div>

@@ -187,8 +187,8 @@ that returns <strong>one scalar per polygon</strong>. If it returns multiple val
 producing one value per polygon per layer; join to the appropriate 100 m grid (or its
 parent for r3000/r10000), and rasterize to the cropped template via <code>fasterize</code>,
 writing <strong>per-tile GeoTIFFs</strong>.</p></li>
-<li><p>For each <code>layer × radius</code>: VRT-merge tiles → <strong>project to the full template grid</strong>
-→ mask to the template footprint.</p></li>
+<li><p>For each <code>layer at radius</code>: VRT-merge tiles then <strong>project to the full template grid</strong>
+then mask to the template footprint.</p></li>
 <li><p><strong>Gap analysis &amp; optional fill:</strong> count NA gaps inside the template. If <code>fill_missing = TRUE</code>
 and gaps exist, estimate max gap width on the template (<code><a href="https://rspatial.github.io/terra/reference/distance.html" class="external-link">terra::distance()</a></code> on a fillable
 mask), set Whitebox <code>filter = 2 * ceil(max_gap / pixel_size)</code> with <strong>min clamp = 3</strong>,

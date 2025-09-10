@@ -155,7 +155,7 @@ Default <code>c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_C
 
 
 <dt id="arg-write-datatype">write_datatype<a class="anchor" aria-label="anchor" href="#arg-write-datatype"></a></dt>
-<dd><p>Terra datatype for writing. Default <code>NULL</code> → <code>"FLT4S"</code>.</p></dd>
+<dd><p>Terra datatype for writing. Default <code>NULL</code> will be coded as <code>"FLT4S"</code>.</p></dd>
 
 
 <dt id="arg-terra-memfrac">terra_memfrac<a class="anchor" aria-label="anchor" href="#arg-terra-memfrac"></a></dt>
@@ -194,7 +194,7 @@ templates from https://zenodo.org/records/14497070 (download via the function
 to the 100 m template. It only warns if CRSs differ. For rare cases, set
 <code>project_to_template_input = TRUE</code> and provide <code>template_input</code> (10 m) to reproject
 the input once at the start. Distance is computed in the (possibly reprojected)
-input’s map units.</p>
+inputs map units.</p>
 <p><strong>Selecting class values:</strong> <code>values_as_one</code> accepts any-length vector combining:</p><ul><li><p>numeric values (e.g., <code>500</code>, <code>c(610,620,630)</code>), and/or</p></li>
 <li><p>range strings in interval notation with inclusive/exclusive bounds:
 <code>"[400,600]"</code>, <code>"(400,600)"</code>, <code>"[400,600)"</code>, <code>"(400,600]"</code>.
@@ -204,7 +204,7 @@ cells are considered sources.</p></li>
 <code><a href="https://whiteboxr.gishub.org/reference/wbt_euclidean_distance.html" class="external-link">whitebox::wbt_euclidean_distance()</a></code>; otherwise <code><a href="https://rspatial.github.io/terra/reference/distance.html" class="external-link">terra::distance()</a></code> is used.</p>
 <p><strong>Auto alignment choice:</strong> If input distance grid and the 100 m template are
 same-CRS, bounding boxes match, and the template resolution is an <strong>integer multiple</strong>
-of the input resolution (e.g., 10 m → 100 m), the function uses
+of the input resolution (e.g., 10 m to 100 m), the function uses
 <code>terra::aggregate(..., fun=mean)</code> (fast), followed by a light
 <code>resample(..., "near")</code> to lock onto the template grid. Otherwise, it falls back
 to <code>terra::resample(..., method="mean")</code>.</p>
@@ -232,7 +232,7 @@ do <code>aggregate(mean)</code> then <code>resample("near")</code>.</p></li>
 <li><p><strong>Write atomically</strong> to GeoTIFF with LZW compression and tuned GDAL options.</p></li>
 <li><p>Restore <code>terraOptions()</code> and sink state on exit (prevents stuck sinks).</p></li>
 </ol><p>Console safety: uses <code><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat()</a></code> for progress and snapshots/restores sink state on exit
-so your console won’t remain “sunk” after interrupts.</p>
+so your console will not remain "sunk" after interrupts.</p>
 <p>[400,600)"<code>, </code>"(400,600]: R:400,600)%22%60,%20%60%22(400,600</p>
     </div>
     <div class="section level2">

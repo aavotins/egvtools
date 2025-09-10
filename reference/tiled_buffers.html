@@ -12,10 +12,10 @@ tileid = unique value of split_field (default "tks50km") inside the input file
 The buffer_mode determines how radii are assigned:
 "dense": Buffers the best-matching pts100*.parquet (prefers pts100_sauzeme.parquet)
 for each tile by radii_dense (default: 500, 1250, 3000, 10000 m).
-"sparse": Uses a file→radius mapping. Default mapping:
-pts100_sauzeme.parquet → c(500, 1250)
-pts300_sauzeme.parquet → 3000
-pts1000_sauzeme.parquet → 10000
+"sparse": Uses a file to radius mapping. Default mapping:
+pts100_sauzeme.parquet to c(500, 1250)
+pts300_sauzeme.parquet to 3000
+pts1000_sauzeme.parquet to 10000
 You can override this via mapping_sparse (named list or data.frame with columns file, radius).
 
 "specified": You provide points_path and either
@@ -35,10 +35,10 @@ tileid = unique value of split_field (default "tks50km") inside the input file
 The buffer_mode determines how radii are assigned:
 "dense": Buffers the best-matching pts100*.parquet (prefers pts100_sauzeme.parquet)
 for each tile by radii_dense (default: 500, 1250, 3000, 10000 m).
-"sparse": Uses a file→radius mapping. Default mapping:
-pts100_sauzeme.parquet → c(500, 1250)
-pts300_sauzeme.parquet → 3000
-pts1000_sauzeme.parquet → 10000
+"sparse": Uses a file to radius mapping. Default mapping:
+pts100_sauzeme.parquet to c(500, 1250)
+pts300_sauzeme.parquet to 3000
+pts1000_sauzeme.parquet to 10000
 You can override this via mapping_sparse (named list or data.frame with columns file, radius).
 
 "specified": You provide points_path and either
@@ -85,9 +85,9 @@ buffer_radius (uniform, one or more fixed radii) or radius_field
 <li><p><strong>tileid</strong> = unique value of <code>split_field</code> (default "tks50km") inside the input file</p></li>
 </ul><p>The <code>buffer_mode</code> determines how radii are assigned:</p><ul><li><p><strong>"dense"</strong>: Buffers the best-matching <code>pts100*.parquet</code> (prefers <code>pts100_sauzeme.parquet</code>)
 for each tile by <code>radii_dense</code> (default: 500, 1250, 3000, 10000 m).</p></li>
-<li><p><strong>"sparse"</strong>: Uses a file→radius mapping. Default mapping:</p><ul><li><p><code>pts100_sauzeme.parquet</code> → c(500, 1250)</p></li>
-<li><p><code>pts300_sauzeme.parquet</code> → 3000</p></li>
-<li><p><code>pts1000_sauzeme.parquet</code> → 10000
+<li><p><strong>"sparse"</strong>: Uses a file to radius mapping. Default mapping:</p><ul><li><p><code>pts100_sauzeme.parquet</code> to c(500, 1250)</p></li>
+<li><p><code>pts300_sauzeme.parquet</code> to 3000</p></li>
+<li><p><code>pts1000_sauzeme.parquet</code> to 10000
 You can override this via <code>mapping_sparse</code> (named list or data.frame with columns <code>file</code>, <code>radius</code>).</p></li>
 </ul></li>
 <li><p><strong>"specified"</strong>: You provide <code>points_path</code> and either
@@ -119,7 +119,6 @@ You can override this via <code>mapping_sparse</code> (named list or data.frame 
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
     <p>Zenodo grids/points example: https://zenodo.org/records/14277114</p>
-<p>#' @examples</p>
     </div>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
@@ -145,7 +144,7 @@ Default c(500, 1250, 3000, 10000).</p></dd>
 
 
 <dt id="arg-mapping-sparse">mapping_sparse<a class="anchor" aria-label="anchor" href="#arg-mapping-sparse"></a></dt>
-<dd><p>Named list <strong>or</strong> data.frame describing file→radii for
+<dd><p>Named list <strong>or</strong> data.frame describing file to radii for
 <code>buffer_mode = "sparse"</code>. Default:
 <code>list("pts100_sauzeme.parquet" = c(500, 1250), "pts300_sauzeme.parquet" = 3000, "pts1000_sauzeme.parquet" = 10000)</code>.
 If a data.frame is supplied, it must have columns <code>file</code> and <code>radius</code>.</p></dd>
@@ -176,7 +175,7 @@ per-feature radii (meters) for "specified". If given, <code>buffer_radius</code>
 
 <dt id="arg-os-type">os_type<a class="anchor" aria-label="anchor" href="#arg-os-type"></a></dt>
 <dd><p>Optional character to force backend plan:
-"windows", "mac", "darwin", "linux", "slurm". Default NULL → auto-detect.</p></dd>
+"windows", "mac", "darwin", "linux", "slurm". Default NULL becomes auto-detect.</p></dd>
 
 
 <dt id="arg-future-max-mem-gb">future_max_mem_gb<a class="anchor" aria-label="anchor" href="#arg-future-max-mem-gb"></a></dt>
@@ -201,7 +200,7 @@ Sets <code>options(future.globals.maxSize = future_max_mem_gb * 1024^3)</code>. 
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
 
-<ul><li><p>Uses sfarrow for parquet I/O and sf for buffering.</p></li>
+<ul><li><p>Uses <span class="pkg">sfarrow</span> for parquet I/O and <span class="pkg">sf</span> for buffering.</p></li>
 <li><p>Jobs are created <strong>per tile</strong> (unique <code>split_field</code> value) and (when applicable) per radius.</p></li>
 <li><p>Workers open data from file paths (keeps RAM low).</p></li>
 <li><p>Files are written atomically (temp file then move).</p></li>
@@ -213,6 +212,14 @@ workers never write to the same file.</p></li>
     <div class="dont-index"><p><code><a href="tile_vector_grid.html">tile_vector_grid()</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="fu">tiled_buffers</span><span class="op">(</span>buffer_mode <span class="op">=</span> <span class="st">"sparse"</span>, split_field <span class="op">=</span> <span class="st">"tks50km"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
