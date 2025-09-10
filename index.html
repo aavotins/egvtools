@@ -60,12 +60,40 @@
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"aavotins/egvtools"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>There will be example here. Soon.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://aavotins.github.io/egvtools/">egvtools</a></span><span class="op">)</span></span>
-<span><span class="co">## basic example code</span></span></code></pre></div>
+<p>Functions in this package can be devided in two parts with extra intermediate wrapper:</p>
+<ol style="list-style-type: decimal">
+<li>helper functions to prepare analysis templates for reproduction:</li>
+</ol>
+<ul>
+<li><p><code><a href="reference/download_raster_templates.html">download_raster_templates()</a></code> — fetch template rasters (from Zenodo repository);</p></li>
+<li><p><code><a href="reference/download_vector_templates.html">download_vector_templates()</a></code> — fetch template vector grids/points (from Zenodo repository);</p></li>
+<li><p><code><a href="reference/tile_vector_grid.html">tile_vector_grid()</a></code> — tile template (vector) grid for chunked processing;</p></li>
+<li><p><code><a href="reference/tiled_buffers.html">tiled_buffers()</a></code> — precompute buffered tiles for multiple radii;</p></li>
+</ul>
+<ol start="2" style="list-style-type: decimal">
+<li>intermediate wrapper around <code><a href="https://rspatial.github.io/terra/reference/ifelse.html" class="external-link">terra::ifel()</a></code>:</li>
+</ol>
+<ul>
+<li>
+<code><a href="reference/create_backgrounds.html">create_backgrounds()</a></code> — build consistent background rasters, guarding spatial cover, resolution, coordinate reference system, exact pixel matching, etc.;</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>core analysis functions - small workflows, that are easily generalizable to other areas or usecases. Every function guards spatial cover, resolution, coordinate reference system, exact pixel matching, etc.:</li>
+</ol>
+<ul>
+<li><p><code><a href="reference/polygon2input.html">polygon2input()</a></code> — rasterize polygons to ultra-high-resolution template, handle background/mask;</p></li>
+<li><p><code><a href="reference/input2egv.html">input2egv()</a></code> — normalize/align ultra-high-resolution inputs to broader-resolution EGV output rasters with guards to template;</p></li>
+<li><p><code><a href="reference/downscale2egv.html">downscale2egv()</a></code> — downscale coarse rasters to template grid and optionally smooth with IDW;</p></li>
+<li><p><code><a href="reference/distance2egv.html">distance2egv()</a></code> — distances to features in inputs, summarised to EGV resolution with optional gap filling at the edges;</p></li>
+<li><p><code><a href="reference/landscape_function.html">landscape_function()</a></code> — landscape-level per-zone metrics, tiled;</p></li>
+<li><p><code><a href="reference/radius_function.html">radius_function()</a></code> — multi-scale zonal statistics (dense/sparse).</p></li>
+</ul>
+<p>In this package we use various geodata. Vector data need to be polygonised before <code><a href="reference/polygon2input.html">polygon2input()</a></code>. Multiple outputs of this function can be combined before creating EGVs.</p>
+<p>We use term <em>input</em> for raster layers of higher resolution (exact multiple) than EGV used for species distribution analysis. These layers are for geodata harmonisation and standartisation in a <em>much</em> faster and memory-friendly approach.</p>
+<p>Every other function ending with <code>*egv()</code> and <code>landscape_*()</code> and <code>radius_*()</code> functions create standartised and harmonised EGVs.</p>
+<p>Functions ending with <code>*egv()</code> and <code>landscape_*()</code> function operate at EGV cell resolution. While <code><a href="reference/radius_function.html">radius_function()</a></code> creates output matching EGV template with cell values representing aggregated information from larger scales (at specified radius around every EGV-cells center)</p>
 </div>
 <div class="section level2">
 <h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
