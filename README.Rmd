@@ -43,15 +43,60 @@ You can install the development version of egvtools from [GitHub](https://github
 pak::pak("aavotins/egvtools")
 ```
 
-## Example
+## Usage
 
-There will be example here. Soon.
+Functions in this package can be devided in two parts with extra intermediate wrapper:
 
-```{r example}
-library(egvtools)
-## basic example code
-```
+1) helper functions to prepare analysis templates for reproduction:
 
+ - `download_raster_templates()` — fetch template rasters (from Zenodo repository);
+
+ - `download_vector_templates()` — fetch template vector grids/points (from Zenodo repository);
+
+ - `tile_vector_grid()` — tile template (vector) grid for chunked processing;
+
+ - `tiled_buffers()` — precompute buffered tiles for multiple radii;
+
+
+2) intermediate wrapper around `terra::ifel()`:
+
+ - `create_backgrounds()` — build consistent background rasters, guarding spatial
+ cover, resolution, coordinate reference system, exact pixel matching, etc.;
+ 
+3) core analysis functions - small workflows, that are easily generalizable to 
+other areas or usecases. Every function guards spatial cover, resolution, 
+coordinate reference system, exact pixel matching, etc.:
+
+ - `polygon2input()` — rasterize polygons to ultra-high-resolution template, handle background/mask;
+
+ - `input2egv()` — normalize/align ultra-high-resolution inputs to 
+ broader-resolution EGV output rasters with guards to template;
+
+ - `downscale2egv()` — downscale coarse rasters to template grid and optionally 
+ smooth with IDW;
+
+ - `distance2egv()` — distances to features in inputs, summarised to EGV resolution 
+ with optional gap filling at the edges;
+
+ - `landscape_function()` — \pkg{landscapemetrics} landscape-level per-zone metrics, tiled;
+
+ - `radius_function()` — multi-scale zonal statistics (dense/sparse).
+
+In this package we use various geodata. Vector data need to be polygonised 
+before `polygon2input()`. Multiple outputs of this function can be combined before 
+creating EGVs.
+
+We use term *input* for raster layers of higher resolution (exact multiple) than 
+EGV used for species distribution analysis. These layers are for geodata 
+harmonisation and standartisation in a *much* faster and memory-friendly approach.
+
+Every other function ending with `*egv()` and `landscape_*()` and `radius_*()` 
+functions create standartised and harmonised EGVs. 
+
+Functions ending with `*egv()` and `landscape_*()` function operate at EGV cell 
+resolution. While `radius_function()` creates output matching EGV template with 
+cell values representing aggregated information from larger scales (at specified 
+radius around every EGV-cells  center)
 
 ## Code of Conduct
 
