@@ -39,6 +39,10 @@
 #' - `options(egvtools.future_plan = "sequential")`
 #' - `options(egvtools.progress    = TRUE)`
 #'
+#' @section Options:
+#' - `egvtools.future_plan`: default parallel plan name (e.g. `"sequential"`, `"multisession"`).
+#' - `egvtools.progress`: logical, show progress bars (`TRUE`/`FALSE`).
+#'
 #' @section Getting started:
 #' 1. Run `download_*_templates()` to fetch canonical inputs.
 #' 2. Use `tile_vector_grid()` / `tiled_buffers()` for scalable chunks.

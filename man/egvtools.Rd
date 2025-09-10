@@ -59,6 +59,12 @@ Package defaults are set on load (see \code{zzz-options.R}). Users may override:
 \item \code{options(egvtools.future_plan = "sequential")}
 \item \code{options(egvtools.progress    = TRUE)}
 }
+
+
+\itemize{
+\item \code{egvtools.future_plan}: default parallel plan name (e.g. \code{"sequential"}, \code{"multisession"}).
+\item \code{egvtools.progress}: logical, show progress bars (\code{TRUE}/\code{FALSE}).
+}
 }
 
 \section{Getting started}{
