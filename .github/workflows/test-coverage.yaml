@@ -27,8 +27,10 @@ jobs:
       - name: Compute coverage
         run: |
           cov <- covr::package_coverage()
-          covr::coverage_to_cobertura(cov, filename = "cobertura.xml")
+          xml <- covr::to_cobertura(cov)
+          writeLines(xml, "cobertura.xml")
         shell: Rscript {0}
+
 
       # Upload to Codecov using your repository secret
       - name: Upload to Codecov
