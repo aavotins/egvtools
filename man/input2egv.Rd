@@ -111,7 +111,7 @@ tuned GDAL write options, and controlled \code{terra} memory/temp behavior.
 \item If \code{missing_job} contains \strong{CoverInput}, build \code{input_bg} (numeric + \code{input_template}, or raster/path)
 and \code{terra::cover()} the input.
 \item \strong{Resample/aggregate} the input to the template with \code{summary_function}
-(\code{"mean"} → \code{"average"}). If \code{is_categorical=TRUE} the method is forced to \code{"near"}.
+(\code{"mean"} is linked to \code{"average"}). If \code{is_categorical=TRUE} the method is forced to \code{"near"}.
 \item Count \strong{initial gaps} = \code{is.na(aligned) & !is.na(template)}.
 \item If \code{missing_job} contains \strong{CoverOutput}, apply \code{terra::cover()} using \code{output_bg}.
 \item If \code{missing_job} contains \strong{FillOutput} \strong{and} \code{!is_categorical},
@@ -128,7 +128,7 @@ and write with LZW/tiling (adds a \code{PREDICTOR} appropriate to datatype if mi
 \item \code{"CoverOutput"}: cover the \strong{resampled} raster (with \code{output_bg}).
 \item \code{"FillOutput"}: if gaps remain after resampling, compute a max-gap distance
 (via \code{terra::distance}) and call \code{whitebox::wbt_fill_missing_data()} with a filter
-width ≈ \verb{2×} the maximum gap (in pixels). Only a minimum clamp (\verb{>= 3}) is applied (no max clamp).
+width approx. twice the maximum gap (in pixels). Only a minimum clamp (\verb{>= 3}) is applied.
 \item Combinations: \code{"CoverInput-CoverOutput"}, \code{"CoverInput-FillOutput"}.
 \item \code{"none"}: do nothing about gaps.
 }

@@ -73,7 +73,7 @@ original name, e.g. \code{bg10_my.tif}. Uses LZW compression and atomic writes.
 Large rasters can stream to disk with \code{terra_todisk=TRUE}.
 
 Console safety: uses \code{cat()} for progress and snapshots/restores sink state
-on exit so your console won’t remain “sunk” after interrupts.
+on exit so your console will not remain "sunk" after interrupts.
 }
 \details{
 \itemize{
@@ -81,17 +81,17 @@ on exit so your console won’t remain “sunk” after interrupts.
 \item Applies a fast element-wise replacement with \code{terra::ifel(!is.na(x), background_value, NA)}.
 \item Writes with LZW compression to a temporary \code{._tmp.tif}, then atomically renames
 to the final file.
-\item If you don’t set \code{write_datatype}/\code{NAflag}, the function picks sensible defaults:
+\item If you do not set \code{write_datatype}/\code{NAflag}, the function picks sensible defaults:
 \itemize{
-\item If \code{background_value} is an integer and within \verb{[-32768, 32767]} → \code{INT2S} + \code{NAflag=-32768}.
-\item Otherwise → \code{FLT4S} + float \code{NAflag} (\code{-3.4028235e38}).
+\item If \code{background_value} is an integer and within \verb{[-32768, 32767]}, then \code{INT2S} + \code{NAflag=-32768}.
+\item Otherwise \code{FLT4S} + float \code{NAflag} (\code{-3.4028235e38}).
 }
 \item Only \code{.tif} / \code{.tiff} files are processed (optionally refine with \code{pattern}).
 }
 }
 \examples{
 \dontrun{
-# Classic “nulls_” backgrounds (fill 0)
+# Classic "nulls_" backgrounds (fill 0)
 create_backgrounds(
   in_dir = "./Templates/TemplateRasters",
   out_dir = "./Outputs/Nulls",

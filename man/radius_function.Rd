@@ -102,8 +102,8 @@ Windows, macOS, and Linux.
 producing one value per polygon per layer; join to the appropriate 100 m grid (or its
 parent for r3000/r10000), and rasterize to the cropped template via \code{fasterize},
 writing \strong{per-tile GeoTIFFs}.
-\item For each \verb{layer × radius}: VRT-merge tiles → \strong{project to the full template grid}
-→ mask to the template footprint.
+\item For each \verb{layer at radius}: VRT-merge tiles then \strong{project to the full template grid}
+then mask to the template footprint.
 \item \strong{Gap analysis & optional fill:} count NA gaps inside the template. If \code{fill_missing = TRUE}
 and gaps exist, estimate max gap width on the template (\code{terra::distance()} on a fillable
 mask), set Whitebox \code{filter = 2 * ceil(max_gap / pixel_size)} with \strong{min clamp = 3},

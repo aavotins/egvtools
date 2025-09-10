@@ -7,13 +7,13 @@
 #' rasters produced by `polygon2input()`.
 #'
 #' @details
-#' **Preparation & CRS:** Prepare inputs with the function `polygon2input()` and the 
+#' **Preparation & CRS:** Prepare inputs with the function `polygon2input()` and the
 #' templates from https://zenodo.org/records/14497070 (download via the function
 #' `download_raster_templates()`). The function does **not** automatically reproject
 #' to the 100 m template. It only warns if CRSs differ. For rare cases, set
 #' `project_to_template_input = TRUE` and provide `template_input` (10 m) to reproject
 #' the input once at the start. Distance is computed in the (possibly reprojected)
-#' input’s map units.
+#' inputs map units.
 #'
 #' **Selecting class values:** `values_as_one` accepts any-length vector combining:
 #' - numeric values (e.g., `500`, `c(610,620,630)`), and/or
@@ -27,7 +27,7 @@
 #'
 #' **Auto alignment choice:** If input distance grid and the 100 m template are
 #' same-CRS, bounding boxes match, and the template resolution is an **integer multiple**
-#' of the input resolution (e.g., 10 m → 100 m), the function uses
+#' of the input resolution (e.g., 10 m to 100 m), the function uses
 #' `terra::aggregate(..., fun=mean)` (fast), followed by a light
 #' `resample(..., "near")` to lock onto the template grid. Otherwise, it falls back
 #' to `terra::resample(..., method="mean")`.
@@ -60,7 +60,7 @@
 #' 9. Restore `terraOptions()` and sink state on exit (prevents stuck sinks).
 #'
 #' Console safety: uses `cat()` for progress and snapshots/restores sink state on exit
-#' so your console won’t remain “sunk” after interrupts.
+#' so your console will not remain "sunk" after interrupts.
 #'
 #' @param input `terra::SpatRaster` or file path. Raster prepared by `polygon2input()`.
 #' @param template_egv `terra::SpatRaster` or path. Target EGV template (e.g., 100 m).
@@ -86,7 +86,7 @@
 #' @param NAflag Optional NA flag for writing. Default `NULL` (omitted for Float32).
 #' @param gdal_opts GDAL creation options (merged with tuned defaults).
 #'   Default `c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")`.
-#' @param write_datatype Terra datatype for writing. Default `NULL` → `"FLT4S"`.
+#' @param write_datatype Terra datatype for writing. Default `NULL` will be coded as `"FLT4S"`.
 #' @param terra_memfrac `terraOptions(memfrac=...)`. Default `0.7`.
 #' @param terra_tempdir Temp dir for terra ops. Default `tempdir()`.
 #' @param terra_todisk Logical or `NA`. If `TRUE`, prefer on-disk for heavy steps. Default `FALSE`.
@@ -132,9 +132,9 @@
 #' }
 #'
 #' @seealso
-#'   [polygon2input()] for preparing the input raster,  
-#'   [input2egv()] for aggregation/resampling to the EGV grid,  
-#'   [downscale2egv()], [landscape_function()], [radius_function()],  
+#'   [polygon2input()] for preparing the input raster,
+#'   [input2egv()] for aggregation/resampling to the EGV grid,
+#'   [downscale2egv()], [landscape_function()], [radius_function()],
 #'   and the template downloaders: [download_raster_templates()], [download_vector_templates()].
 #'
 #' @importFrom utils capture.output
@@ -168,7 +168,7 @@ distance2egv <- function(
     quiet          = FALSE
 ) {
   t0 <- Sys.time()
-  
+
   # ---- sink safety ----
   orig_out <- sink.number()
   orig_msg <- sink.number(type = "message")
@@ -176,11 +176,11 @@ distance2egv <- function(
     while (sink.number(type = "message") > orig_msg) sink(type = "message")
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
-  
+
   say <- function(...) if (!quiet) cat(..., "\n")
   .maybe_gc <- function() if (isTRUE(force_gc)) gc()
   .as_rast <- function(x) if (inherits(x, "SpatRaster")) x else terra::rast(x)
-  
+
   # deps
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -189,37 +189,37 @@ distance2egv <- function(
   }
   .need_pkg("terra", "distance / resample / write")
   .need_pkg("whitebox", "Euclidean distance and/or gap fill via Whitebox")
-  
-  
+
+
   # robust range parser: "[a,b]", "(a,b]", "[a,)", "(-inf,10)", "[1,+inf]" etc.
   in_range_str <- function(x, spec) {
     s <- trimws(as.character(spec)[1])
     s <- trimws(s)
     if (nchar(s) < 3) stop("Bad range spec: ", spec)
-    
+
     lb <- substr(s, 1, 1)
     rb <- substr(s, nchar(s), nchar(s))
     if (!(lb %in% c("(", "[")) || !(rb %in% c(")", "]"))) stop("Bad range spec: ", spec)
-    
+
     inner <- substr(s, 2, nchar(s) - 1)
     # split on first comma only
     comma_pos <- regexpr(",", inner, fixed = TRUE)[1]
     if (comma_pos < 1) stop("Bad range spec: ", spec)
-    
+
     a_txt <- trimws(substr(inner, 1, comma_pos - 1))
     b_txt <- trimws(substr(inner, comma_pos + 1, nchar(inner)))
-    
+
     parse_bound <- function(z) {
       if (!nzchar(z)) return(NA_real_)  # unbounded
       zl <- tolower(z)
-      if (zl %in% c("inf","+inf","infinity","+infinity","∞","*")) return( Inf)
-      if (zl %in% c("-inf","-infinity","-∞"))                   return(-Inf)
+      if (zl %in% c("inf","+inf","infinity","+infinity","*")) return( Inf)
+      if (zl %in% c("-inf","-infinity"))                   return(-Inf)
       as.numeric(z)
     }
-    
+
     a <- parse_bound(a_txt)
     b <- parse_bound(b_txt)
-    
+
     # Lower test
     lower_ok <- if (is.na(a) || (is.infinite(a) && a < 0)) {
       TRUE
@@ -228,7 +228,7 @@ distance2egv <- function(
     } else {
       x >= a
     }
-    
+
     # Upper test
     upper_ok <- if (is.na(b) || (is.infinite(b) && b > 0)) {
       TRUE
@@ -237,16 +237,16 @@ distance2egv <- function(
     } else {
       x <= b
     }
-    
+
     lower_ok & upper_ok
   }
-  
-  
+
+
   # ---- args & I/O ----
   if (missing(outfilename)) stop("'outfilename' is required.")
   if (missing(layername))   stop("'layername' is required.")
   if (!dir.exists(outlocation)) dir.create(outlocation, recursive = TRUE, showWarnings = FALSE)
-  
+
   # ---- terra tuning (silenced) + restore on exit ----
   old_opt <- NULL
   utils::capture.output({ old_opt <- terra::terraOptions() })
@@ -257,11 +257,11 @@ distance2egv <- function(
     if (!is.na(terra_todisk)) terra::terraOptions(todisk = isTRUE(terra_todisk))
     terra::terraOptions(progress = FALSE)
   })
-  
+
   # ---- load rasters ----
   r_in <- .as_rast(input)
   tmpl <- .as_rast(template_egv)
-  
+
   # optional early reprojection (once), if requested
   if (isTRUE(project_to_template_input)) {
     if (is.null(template_input)) stop("Set 'template_input' (10 m) when 'project_to_template_input=TRUE'.")
@@ -274,7 +274,7 @@ distance2egv <- function(
     warning("CRS of input and template_egv differ. Distance will be computed on the input CRS/grid.\n",
             "Consider 'project_to_template_input=TRUE' with 'template_input' to reproject once at the start.")
   }
-  
+
   # ---- build source (seed) raster on the input grid ----
   if (is.null(values_as_one)) {
     seeds <- terra::ifel(!is.na(r_in), 1, NA,
@@ -310,14 +310,14 @@ distance2egv <- function(
       overwrite = TRUE
     )
   }
-  
+
   # tally sources
   n_sources <- as.integer(terra::global(terra::as.int(!is.na(seeds)), fun = "sum", na.rm = TRUE))
   if (is.na(n_sources)) n_sources <- 0L
   if (n_sources == 0L) say("Warning: no source cells found (no class matches).")
-  
+
   .maybe_gc()
-  
+
   # ---- distance on the input grid ----
   say(if (use_whitebox) "Computing distance with WhiteboxTools ..." else "Computing distance with terra::distance() ...")
   if (isTRUE(use_whitebox)) {
@@ -327,7 +327,7 @@ distance2egv <- function(
     terra::writeRaster(bin, wb_in, overwrite = TRUE,
                        gdal = c("COMPRESS=NONE","TILED=YES","BLOCKXSIZE=256","BLOCKYSIZE=256"))
     rm(bin); .maybe_gc()
-    
+
     ok <- TRUE
     tryCatch({
       whitebox::wbt_euclidean_distance(input = wb_in, output = wb_out)
@@ -346,14 +346,14 @@ distance2egv <- function(
                             overwrite = TRUE)
   }
   rm(seeds); .maybe_gc()
-  
-  # ---- align to template (aggregate→near if perfectly nested; else resample mean) ----
+
+  # ---- align to template (aggregate with near if perfectly nested; else resample mean) ----
   same_crs <- terra::same.crs(d_in, tmpl)
   bbox_match <- all(terra::ext(d_in) == terra::ext(tmpl))
   res_in  <- terra::res(d_in);  res_t  <- terra::res(tmpl)
   mult_ok <- all(abs(res_t / res_in - round(res_t / res_in)) < 1e-7)
   aligned <- NULL
-  
+
   if (same_crs && bbox_match && mult_ok) {
     fact <- as.integer(round(res_t / res_in))
     fact <- ifelse(is.finite(fact), fact, 1L)
@@ -377,13 +377,13 @@ distance2egv <- function(
                               overwrite = TRUE)
   }
   rm(d_in); .maybe_gc()
-  
+
   # ---- final mask to template ----
   aligned <- terra::mask(aligned, tmpl,
                          filename = if (isTRUE(terra_todisk)) file.path(terra_tempdir, paste0("d2e_mask_", basename(tempfile("")), ".tif")) else "",
                          overwrite = TRUE)
   names(aligned) <- layername
-  
+
   # ---- optional gap fill on template grid (Whitebox) ----
   if (isTRUE(fill_gaps)) {
     if (is.null(filter_size)) {
@@ -425,7 +425,7 @@ distance2egv <- function(
       names(aligned) <- layername
     }
   }
-  
+
   # ---- NA count (inside template footprint only) ----
   n_na_final <- NA_integer_
   if (isTRUE(check_na) || isTRUE(plot_gaps)) {
@@ -433,7 +433,7 @@ distance2egv <- function(
     n_na_final <- as.integer(terra::global(terra::as.int(gaps), fun = "sum", na.rm = TRUE))
     if (is.na(n_na_final)) n_na_final <- 0L
   }
-  
+
   # ---- stats & plots ----
   min_dist <- suppressWarnings(terra::global(aligned, fun = "min", na.rm = TRUE)[[1]])
   max_dist <- suppressWarnings(terra::global(aligned, fun = "max", na.rm = TRUE)[[1]])
@@ -446,26 +446,26 @@ distance2egv <- function(
       terra::plot(gap_r, main = "Gaps (1 = NA inside template)", col = c(NA, "red"), legend = FALSE)
     }
   }
-  
+
   # ---- write (atomic, LZW, Float32 default) ----
   def_opts <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
   gdal_opts <- unique(c(gdal_opts, def_opts))
   if (is.null(write_datatype)) write_datatype <- "FLT4S"
   if (!any(grepl("^PREDICTOR=", gdal_opts))) gdal_opts <- c(gdal_opts, "PREDICTOR=2")
-  
+
   out_path <- file.path(outlocation, outfilename)
   ext  <- tools::file_ext(out_path); ext <- if (nzchar(ext)) ext else "tif"
   stem <- sub(sprintf("\\.%s$", ext), "", out_path)
   tmp_out <- sprintf("%s._tmp.%s", stem, ext)
   if (file.exists(tmp_out)) try(unlink(tmp_out), silent = TRUE)
-  
+
   write_args <- list(x = aligned, filename = tmp_out, overwrite = TRUE, gdal = gdal_opts, datatype = write_datatype)
   if (!is.null(NAflag)) write_args$NAflag <- NAflag
   do.call(terra::writeRaster, write_args)
-  
+
   if (file.exists(out_path)) try(unlink(out_path), silent = TRUE)
   file.rename(tmp_out, out_path)
-  
+
   elapsed_sec <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
   invisible(list(
     path        = out_path,

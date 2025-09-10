@@ -9,16 +9,16 @@
 #' Large rasters can stream to disk with `terra_todisk=TRUE`.
 #'
 #' Console safety: uses `cat()` for progress and snapshots/restores sink state
-#' on exit so your console won’t remain “sunk” after interrupts.
+#' on exit so your console will not remain "sunk" after interrupts.
 #'
 #' @details
 #' - Reads each input with `terra::rast()`.
 #' - Applies a fast element-wise replacement with `terra::ifel(!is.na(x), background_value, NA)`.
 #' - Writes with LZW compression to a temporary `._tmp.tif`, then atomically renames
 #'   to the final file.
-#' - If you don’t set `write_datatype`/`NAflag`, the function picks sensible defaults:
-#'     - If `background_value` is an integer and within `[-32768, 32767]` → `INT2S` + `NAflag=-32768`.
-#'     - Otherwise → `FLT4S` + float `NAflag` (`-3.4028235e38`).
+#' - If you do not set `write_datatype`/`NAflag`, the function picks sensible defaults:
+#'     - If `background_value` is an integer and within `[-32768, 32767]`, then `INT2S` + `NAflag=-32768`.
+#'     - Otherwise `FLT4S` + float `NAflag` (`-3.4028235e38`).
 #' - Only `.tif` / `.tiff` files are processed (optionally refine with `pattern`).
 #'
 #' @param in_dir Directory containing input rasters.
@@ -46,7 +46,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Classic “nulls_” backgrounds (fill 0)
+#' # Classic "nulls_" backgrounds (fill 0)
 #' create_backgrounds(
 #'   in_dir = "./Templates/TemplateRasters",
 #'   out_dir = "./Outputs/Nulls",
@@ -86,7 +86,7 @@ create_backgrounds <- function(
     quiet = FALSE
 ) {
   t_all <- Sys.time()
-  
+
   # ---- sink safety: snapshot & restore on exit
   orig_out <- sink.number()
   orig_msg <- sink.number(type = "message")
@@ -94,7 +94,7 @@ create_backgrounds <- function(
     while (sink.number(type = "message") > orig_msg) sink(type = "message")
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
-  
+
   # deps
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -103,13 +103,13 @@ create_backgrounds <- function(
   }
   .need_pkg("terra", "read / write / value ops")
   .need_pkg("fs",    "dir creation, file listing")
-  
-  
+
+
   # ---- validate dirs
   if (missing(in_dir) || !fs::dir_exists(in_dir)) stop("'in_dir' must be an existing directory.")
   if (is.null(out_dir)) out_dir <- file.path(in_dir, "backgrounds")
   if (!fs::dir_exists(out_dir)) fs::dir_create(out_dir, recurse = TRUE)
-  
+
   # ---- terra options (silenced)
   old_opt <- NULL
   utils::capture.output({ old_opt <- terra::terraOptions() })
@@ -118,16 +118,16 @@ create_backgrounds <- function(
     terra::terraOptions(memfrac = terra_memfrac, tempdir = terra_tempdir)
     if (!is.na(terra_todisk)) terra::terraOptions(todisk = isTRUE(terra_todisk))
   })
-  
+
   say <- function(...) if (!quiet) cat(..., "\n")
   tuned_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
   gdal_opts <- unique(c(gdal_opts, tuned_defaults))
-  
+
   # auto prefix if not specified
   if (is.null(out_prefix)) {
     if (isTRUE(all.equal(background_value, 0))) out_prefix <- "nulls_" else out_prefix <- paste0("bg", background_value, "_")
   }
-  
+
   # auto datatype / NAflag (unless provided)
   if (is.null(write_datatype)) {
     # choose INT2S if background_value is an integer within [-32768, 32767]; else FLT4S
@@ -141,7 +141,7 @@ create_backgrounds <- function(
   if (is.null(NAflag)) {
     NAflag <- if (write_datatype == "INT2S") -32768 else -3.4028235e38
   }
-  
+
   # ---- collect files
   files <- fs::dir_ls(in_dir, recurse = recursive, type = "file")
   files <- files[tolower(fs::path_ext(files)) %in% c("tif","tiff")]
@@ -150,10 +150,10 @@ create_backgrounds <- function(
     say("No .tif/.tiff files found in:", in_dir)
     return(invisible(data.frame(in_file=character(), out_file=character(), n_cells=integer(), elapsed_sec=numeric())))
   }
-  
+
   say(sprintf("Found %d raster(s). Writing to: %s", length(files), out_dir))
   results <- vector("list", length(files))
-  
+
   for (i in seq_along(files)) {
     t0 <- Sys.time()
     in_file <- files[i]
@@ -164,34 +164,34 @@ create_backgrounds <- function(
       results[[i]] <- data.frame(in_file=in_file, out_file=out_file, n_cells=NA_integer_, elapsed_sec=NA_real_)
       next
     }
-    
+
     say(sprintf("[%d/%d] Processing: %s", i, length(files), fs::path_file(in_file)))
     r <- terra::rast(in_file)
-    
+
     # Assign background to all non-NA; keep NA as NA (stream to disk if requested)
     z <- terra::ifel(!is.na(r), background_value, NA,
                      filename = if (isTRUE(terra_todisk)) file.path(terra_tempdir, sprintf("cbg_%s.tif", basename(tempfile("")))) else "",
                      overwrite = TRUE)
-    
+
     # CRS guard: force identical WKT as input
     terra::crs(z) <- terra::crs(r, proj = FALSE)
-    
+
     # Atomic write with guarded args (preserve .tif)
     ext  <- fs::path_ext(out_file); ext <- if (nzchar(ext)) ext else "tif"
     stem <- fs::path_ext_remove(out_file)
     tmp_out <- sprintf("%s._tmp.%s", stem, ext)
     if (fs::file_exists(tmp_out)) fs::file_delete(tmp_out)
-    
+
     write_args <- list(x = z, filename = tmp_out, overwrite = TRUE, gdal = gdal_opts)
     if (!is.null(write_datatype)) write_args$datatype <- write_datatype
     if (!is.null(NAflag))        write_args$NAflag   <- NAflag
     do.call(terra::writeRaster, write_args)
-    
+
     if (fs::file_exists(out_file)) fs::file_delete(out_file)
     fs::file_move(tmp_out, out_file)
-    
+
     if (force_gc) gc()
-    
+
     results[[i]] <- data.frame(
       in_file = in_file,
       out_file = out_file,
@@ -200,7 +200,7 @@ create_backgrounds <- function(
     )
     say(sprintf("  -> Wrote: %s", out_file))
   }
-  
+
   res_df <- do.call(rbind, results)
   say(sprintf("Done. Total elapsed: %.1f sec", as.numeric(difftime(Sys.time(), t_all, units = "secs"))))
   invisible(res_df)

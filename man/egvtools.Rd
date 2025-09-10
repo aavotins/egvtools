@@ -22,7 +22,7 @@ existing libs, but opinionated for stability, speed and consistency):
 \item \code{downscale2egv()} — downscale coarse rasters to template grid and optionally smooth with IDW.
 \item \code{distance2egv()} — distances to features with optional gap filling at the edges.
 \item \code{input2egv()} — normalize/align inputs to EGV outputs with guards.
-\item \code{landscape_function()} — {landscapemetrics} landscape-level per-zone metrics, tiled.
+\item \code{landscape_function()} — \pkg{landscapemetrics} landscape-level per-zone metrics, tiled.
 \item \code{radius_function()} — multi-scale zonal statistics (dense/sparse).
 }
 }

@@ -1,15 +1,15 @@
 #' Compute landscape-level metrics per zone (tiled), merge, analyze gaps, optionally fill with IDW, and write rasters
 #'
 #' @description
-#' Computes a {landscapemetrics} metric (default `"lsm_l_shdi"`)—optionally with
-#' extra `lm_args`—that yields one value per zone and **per input layer**. Runs tile-by-tile
+#' Computes a \pkg{landscapemetrics} metric (default `"lsm_l_shdi"`), optionally with
+#' extra `lm_args`, that yields one value per zone and **per input layer**. Runs tile-by-tile
 #' (by `tile_field`), writes per-tile rasters, merges to final per-layer GeoTIFF(s),
 #' then performs **gap analysis** (NA count within the template footprint and optional
 #' maximum gap width) and **optional IDW gap filling** via WhiteboxTools.
 #' Returns a compact **data.frame** with per-layer stats and timing.
 #'
 #' Console safety: snapshots/restores sink state on exit; progress via `cat()`,
-#' so interrupts won’t leave your console “sunk”.
+#' so interrupts will not leave your console "sunk".
 #'
 #' @details
 #' **Workflow**
@@ -22,7 +22,7 @@
 #'      join back by `id_field`, rasterize (engine: `"fasterize"` or `"terra"`), mask to template crop,
 #'      and write tile raster. Skips empty crops/joins cleanly.
 #' 4. **Merge per layer**
-#'    - VRT over all tile rasters → final GeoTIFF with tuned GDAL options (LZW, tiling, BIGTIFF=IF_SAFER, threads).
+#'    - VRT over all tile rasters to final GeoTIFF with tuned GDAL options (LZW, tiling, BIGTIFF=IF_SAFER, threads).
 #'    - CRS is **forced to the template WKT** so `crs(output) == crs(template)` string-matches.
 #' 5. **Gap analysis & optional fill (per layer)**
 #'    - `gap_count`: number of NA cells **inside** the template footprint.
@@ -34,7 +34,7 @@
 #'    - One row per output layer with paths, tile counters, gap stats, fill parameters, and elapsed seconds.
 #'
 #' @param landscape SpatRaster or path(s) to .tif (class labels). Multi-layer supported.
-#' @param zones sf polygons or path to {sfarrow} GeoParquet. Default `"./Templates/TemplateGrids/tikls500_sauzeme.parquet"`.
+#' @param zones sf polygons or path to \pkg{sfarrow} GeoParquet. Default `"./Templates/TemplateGrids/tikls500_sauzeme.parquet"`.
 #' @param id_field Zone id field (default `"rinda500"`).
 #' @param tile_field Tiling field (default `"tks50km"`).
 #' @param template SpatRaster or path defining target grid/CRS/cellsize. Default `"./Templates/TemplateRasters/LV500m_10km.tif"`.
@@ -52,7 +52,7 @@
 #'   `c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")`).
 #' @param write_datatype terra datatype string; if `NULL`, defaults to `"FLT4S"`.
 #' @param NAflag Numeric NA value to write; if `NA`/`NULL`, a sensible default is chosen
-#'   (`FLT*→-9999`, `INT2S→-32768`, `INT4S→-2147483648`).
+#'   (`FLT* to -9999`, `INT2S to -32768`, `INT4S to -2147483648`).
 #' @param keep_tiles Logical; keep temp tiles dir (debug). Default `FALSE`.
 #' @param skip_existing Logical; skip tiles/finals that already exist. Default `TRUE`.
 #' @param terra_memfrac `terraOptions(memfrac=...)`. Default `0.7`.
@@ -98,7 +98,7 @@
 #' #' ## --- Total edge length per zone (ignore outside map boundary) ---
 #' ## Using a binary "water vs other" landscape, compute lsm_l_te per 500 m zone.
 #' rez_edges <- landscape_function(
-#'   landscape        = "./Rastri_10m/Ainava_vienk_mask.tif",         # categorical classes: water or else
+#'   landscape        = "./Rastri_10m/Ainava_vienk_mask.tif",
 #'   zones            = "./Templates/TemplateGrids/tikls500_sauzeme.parquet",
 #'   id_field         = "rinda500",
 #'   tile_field       = "tks50km",
@@ -137,6 +137,8 @@
 #' @importFrom methods as
 #' @importFrom sp proj4string
 #' @importFrom graphics par box
+#' @importFrom stats setNames
+#' @importFrom rlang .data :=
 #' @export
 landscape_function <- function(
     landscape,
@@ -504,7 +506,7 @@ landscape_function <- function(
     # --- ALIGN to the *full* template grid (handles buffer around presence)
     r_mos <- terra::rast(tmp_merge)
     r_aln <- if (terra::same.crs(r_mos, tmpl)) {
-      # same CRS → resample onto template extent/origin (fills outer area with NA)
+      # same CRS: resample onto template extent/origin (fills outer area with NA)
       terra::resample(
         r_mos, tmpl, method = "near",
         filename = if (isTRUE(terra_todisk)) tempfile(fileext = ".tif") else "",
@@ -600,7 +602,7 @@ landscape_function <- function(
           gap_r <- terra::ifel(is.na(r_aln) & !is.na(tmpl), 1, NA)
           terra::plot(gap_r, main = "Gaps (1 = NA inside template)", col = c(NA, "red"), legend = FALSE)
         } else {
-          # show a clear “no gaps” panel
+          # show a clear "no gaps" panel
           base_no_gaps <- terra::ifel(!is.na(tmpl), 0, NA)
           terra::plot(base_no_gaps, main = "Gaps: none", col = "white", legend = FALSE)
           box()

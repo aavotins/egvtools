@@ -23,7 +23,7 @@
 #'    - If `restrict_values` is `NULL`, keep **non-NA** cells of `restrict_to`.
 #'    - If supplied, keep cells matching **numbers** (scalar/vector) and/or **ranges** using bracket
 #'      syntax: `"(a,b)"` open; `"[a,b]"` closed; mix ends like `"(a,b]"`. Use `-inf`/`+inf` for unbounded,
-#'      e.g., `"[10,)"`, `"(-inf,0)"`. Multiple entries are OR’ed.
+#'      e.g., `"[10,)"`, `"(-inf,0)"`. Multiple entries are OR-ed.
 #' 6. (Optional) **Cover** remaining `NA` cells:
 #'    - with `background_raster` (aligned to template; projected if needed), or
 #'    - with a **constant** using `background_value` (fast and memory-light).
@@ -32,14 +32,14 @@
 #'
 #' **Datatype & NAflag auto-chooser**
 #' If you do **not** provide `write_datatype`/`NAflag`, the function picks:
-#' - `value_type="categorical"` → `write_datatype="INT2S"`, `NAflag=-32768`
-#' - `value_type="continuous"` → `write_datatype="FLT4S"`, `NAflag` omitted
+#' - `value_type="categorical"` to `write_datatype="INT2S"`, `NAflag=-32768`
+#' - `value_type="continuous"` to `write_datatype="FLT4S"`, `NAflag` omitted
 #' You can always override via arguments.
 #'
 #' **Performance & stability**
 #' - For very large rasters (e.g., ~1.3B cells), set `terra_todisk=TRUE` and consider a fast SSD for
-#'   `terra_tempdir`. This streams big operations to disk and avoids “vector memory limit” errors.
-#' - Projection is often unnecessary here because rasterization targets the template’s grid; `"auto"`
+#'   `terra_tempdir`. This streams big operations to disk and avoids "vector memory limit" errors.
+#' - Projection is often unnecessary here because rasterization targets the template grid; `"auto"`
 #'   will detect alignment and skip it.
 #' - Writes are **atomic**: a temporary file is written and then moved into place.
 #'
@@ -52,12 +52,12 @@
 #' @param fun Aggregation in `fasterize` for overlaps: one of `"max"`, `"sum"`, `"first"`, `"last"`, `"min"`, `"count"`.
 #'   Default `"max"`.
 #' @param value_type Guides resampling **if projection happens**:
-#'   `"categorical"` → method `"near"`, `"continuous"` → `"bilinear"`. Default `"categorical"`.
+#'   `"categorical"` with method `"near"`, `"continuous"` with `"bilinear"`. Default `"categorical"`.
 #' @param project_mode `"auto"` (default; project only if misaligned), `"never"`, or `"always"`.
 #' @param prepare Logical. If `TRUE`, run `st_make_valid()` and transform to template CRS. Default `TRUE`.
 #' @param restrict_to Optional raster mask (path or `terra` `SpatRaster`).
 #' @param restrict_values Optional values to keep from `restrict_to`: numbers (scalar/vector) and/or
-#'   **range strings** using bracket inclusivity, e.g. `"(0,5]"`, `"[10,)"`, `"(-inf,0)"`. Multiple entries are OR’ed.
+#'   **range strings** using bracket inclusivity, e.g. `"(0,5]"`, `"[10,)"`, `"(-inf,0)"`. Multiple entries are OR-ed.
 #'   If `NULL`, keep non-NA cells of `restrict_to`.
 #' @param background_raster Optional path/`SpatRaster` used to cover remaining NAs.
 #' @param background_value Numeric constant to fill where result is NA **if** no `background_raster`.
@@ -80,47 +80,47 @@
 #'
 #' @return Invisibly, a list with `out_file`, `n_cells`, `n_na_initial`, `n_na_final`, `elapsed_sec`, and `crs`.
 #'
-#' @section Range string syntax for restrict_values: 
-#' Use "(a,b)" for open interval, "[a,b]" for closed; mix ends like "(a,b]". Use -inf/+inf (or inf) 
-#' for unbounded, e.g., "[10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]","[10,15)"). 
-#' 
-#' @examples 
-#' \dontrun{ 
-#' # Basic: burn constant "1", continuous output, no covering 
-#' polygon2input( 
+#' @section Range string syntax for restrict_values:
+#' Use \code{(a,b)} for open interval, \code{[a,b]} for closed; mix ends like \code{(a,b]}. Use -inf/+inf (or inf)
+#' for unbounded, e.g., "[10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]","[10,15)").
+#'
+#' @examples
+#' \dontrun{
+#' # Basic: burn constant "1", continuous output, no covering
+#' polygon2input(
 #' vector_data = my_polys_sf,
-#' template_path = "./Templates/TemplateRasters/template10m.tif", 
-#' out_path = "./Outputs", 
-#' file_name = "mask_const1.tif", 
-#' value_field = NULL, 
-#' constant_value = 1, 
-#' value_type = "continuous", 
-#' project_mode = "auto", 
-#' prepare = FALSE, 
-#' check_na = TRUE, 
-#' plot_result = TRUE, 
-#' overwrite = TRUE #' ) 
-#' 
-#' # Restrict to classes 1 and 2, plus (10,20], then fill remaining NAs with 0 
-#' polygon2input( 
-#' vector_data = my_polys_sf, 
-#' template_path = "./Templates/TemplateRasters/template10m.tif", 
-#' out_path = "./Outputs", 
-#' file_name = "mask_restricted_bg0.tif", 
-#' value_field = "attr", 
-#' value_type = "categorical", 
-#' restrict_to = "./mask_classes.tif", 
-#' restrict_values = c(1, 2, "(10,20]"), 
-#' background_value = 0, 
-#' terra_todisk = TRUE, # stream big ops to disk 
-#' terra_tempdir = tempdir(), # or a fast SSD scratch 
-#' check_na = TRUE, 
-#' plot_result = TRUE, 
-#' plot_gaps = TRUE, 
-#' overwrite = TRUE 
-#' ) 
+#' template_path = "./Templates/TemplateRasters/template10m.tif",
+#' out_path = "./Outputs",
+#' file_name = "mask_const1.tif",
+#' value_field = NULL,
+#' constant_value = 1,
+#' value_type = "continuous",
+#' project_mode = "auto",
+#' prepare = FALSE,
+#' check_na = TRUE,
+#' plot_result = TRUE,
+#' overwrite = TRUE #' )
+#'
+#' # Restrict to classes 1 and 2, plus (10,20], then fill remaining NAs with 0
+#' polygon2input(
+#' vector_data = my_polys_sf,
+#' template_path = "./Templates/TemplateRasters/template10m.tif",
+#' out_path = "./Outputs",
+#' file_name = "mask_restricted_bg0.tif",
+#' value_field = "attr",
+#' value_type = "categorical",
+#' restrict_to = "./mask_classes.tif",
+#' restrict_values = c(1, 2, "(10,20]"),
+#' background_value = 0,
+#' terra_todisk = TRUE, # stream big ops to disk
+#' terra_tempdir = tempdir(), # or a fast SSD scratch
+#' check_na = TRUE,
+#' plot_result = TRUE,
+#' plot_gaps = TRUE,
+#' overwrite = TRUE
+#' )
 #' }
-#' 
+#'
 #' @seealso [tiled_buffers()], [tile_vector_grid()]
 #' @importFrom fs dir_exists dir_create file_exists file_delete file_move path_ext path_ext_remove
 #' @importFrom sf st_make_valid st_crs st_transform
@@ -161,15 +161,15 @@ polygon2input <- function(
   t0 <- Sys.time()
   value_type   <- match.arg(value_type)
   project_mode <- match.arg(project_mode)
-  
+
   # sink safety
   orig_out <- sink.number(); orig_msg <- sink.number(type = "message")
   on.exit({
     while (sink.number(type = "message") > orig_msg) sink(type = "message")
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
-  
-  
+
+
   # deps
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -181,8 +181,8 @@ polygon2input <- function(
   .need_pkg("raster",      "building the fasterize target RasterLayer")
   .need_pkg("fasterize",   "fast polygon rasterization")
   .need_pkg("fs",          "filesystem ops (paths, exists)")
-  
-  
+
+
   # basic I/O
   if (missing(vector_data) || !inherits(vector_data, "sf")) stop("'vector_data' must be an sf object.")
   if (missing(template_path) || !fs::file_exists(template_path)) stop("'template_path' must be an existing .tif file.")
@@ -195,7 +195,7 @@ polygon2input <- function(
                           n_na_initial = NA_integer_, n_na_final = NA_integer_,
                           elapsed_sec = NA_real_, crs = NA_character_)))
   }
-  
+
   # terra options (silenced)
   old_opt <- NULL
   utils::capture.output({ old_opt <- terra::terraOptions() })
@@ -204,7 +204,7 @@ polygon2input <- function(
     terra::terraOptions(memfrac = terra_memfrac, tempdir = terra_tempdir)
     if (!is.na(terra_todisk)) terra::terraOptions(todisk = isTRUE(terra_todisk))
   })
-  
+
   # helpers
   mktemp <- function(tag) file.path(terra_tempdir, sprintf("p2i_%s_%s.tif", tag, basename(tempfile(""))))
   aligned_tol <- function(a, b, eps = 1e-7) {
@@ -234,7 +234,7 @@ polygon2input <- function(
     lt <- if (rb == ")") x <  b else x <= b
     gt & lt
   }
-  
+
   # template & (optional) prepare
   tmpl <- terra::rast(template_path)
   tmpl_crs <- terra::crs(tmpl)             # <-- WKT/EPSG (fix)
@@ -243,7 +243,7 @@ polygon2input <- function(
     vec <- sf::st_make_valid(vec)
     if (!identical(sf::st_crs(vec)$wkt, tmpl_crs)) vec <- sf::st_transform(vec, tmpl_crs)
   }
-  
+
   # rasterize onto RasterLayer built from the template
   tmpl_r <- raster::raster(tmpl)
   fld <- value_field
@@ -255,7 +255,7 @@ polygon2input <- function(
   r <- terra::rast(fasterize::fasterize(sf = vec, raster = tmpl_r, field = fld, fun = fun))
   terra::crs(r) <- tmpl_crs                  # <-- enforce WKT/EPSG on the raster
   if (isTRUE(terra_todisk)) r <- terra::writeRaster(r, filename = mktemp("rasterized"), overwrite = TRUE)
-  
+
   # project if needed
   need_project <- switch(project_mode, "always" = TRUE, "never" = FALSE, "auto" = !aligned_tol(r, tmpl))
   if (need_project) {
@@ -267,16 +267,16 @@ polygon2input <- function(
       terra::project(r, tmpl, method = proj_method)
     }
   } else if (!quiet) cat("Projection skipped (grids already aligned).\n")
-  
+
   # keep template extent / NA mask
   r <- if (isTRUE(terra_todisk)) {
     terra::mask(r, tmpl, filename = mktemp("masktmpl"), overwrite = TRUE)
   } else {
     terra::mask(r, tmpl)
   }
-  
+
   if (force_gc) gc()
-  
+
   # NA count before restrict/cover (inside template)
   n_na_initial <- NA_integer_
   if (isTRUE(check_na)) {
@@ -284,7 +284,7 @@ polygon2input <- function(
     n_na_initial <- terra::global(gaps_pre, fun = "sum", na.rm = TRUE)[[1]]
     if (!quiet) cat("Missing cells before restrict/cover:", n_na_initial, "\n")
   }
-  
+
   # restriction
   if (!is.null(restrict_to)) {
     if (!quiet) cat("Applying restriction by values ...\n")
@@ -322,7 +322,7 @@ polygon2input <- function(
       terra::mask(r, mask_r)
     }
   }
-  
+
   # background cover
   if (!is.null(background_raster) || !is.null(background_value)) {
     if (!quiet) cat("Covering remaining NAs with background ...\n")
@@ -342,16 +342,16 @@ polygon2input <- function(
                        filename = if (isTRUE(terra_todisk)) mktemp("coverconst") else "", overwrite = TRUE)
     }
   }
-  
+
   if (force_gc) gc()
-  
+
   # final mask to template
   r <- if (isTRUE(terra_todisk)) {
     terra::mask(r, tmpl, filename = mktemp("maskfinal"), overwrite = TRUE)
   } else {
     terra::mask(r, tmpl)
   }
-  
+
   # NA count after processing
   n_na_final <- NA_integer_
   if (isTRUE(check_na)) {
@@ -359,7 +359,7 @@ polygon2input <- function(
     n_na_final <- terra::global(gaps_post, fun = "sum", na.rm = TRUE)[[1]]
     if (!quiet) cat("Missing cells after all processing:", n_na_final, "\n")
   }
-  
+
   # plotting
   if (isTRUE(plot_result) || isTRUE(plot_gaps)) {
     oldpar <- graphics::par(no.readonly = TRUE); on.exit(graphics::par(oldpar), add = TRUE)
@@ -371,30 +371,30 @@ polygon2input <- function(
       terra::plot(gaps_plot, main = "NA gaps", col = c(NA, "red"), legend = FALSE)
     }
   }
-  
+
   # atomic write (+ auto dtype/NAflag)
   tuned_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
   gdal_opts <- unique(c(gdal_opts, tuned_defaults))
   if (is.null(write_datatype)) write_datatype <- if (value_type == "categorical") "INT2S" else "FLT4S"
   if (is.null(NAflag) && write_datatype == "INT2S") NAflag <- -32768
-  
+
   # enforce WKT/EPSG before writing
   terra::crs(r) <- tmpl_crs
-  
+
   ext <- fs::path_ext(out_file); if (!nzchar(ext)) ext <- "tif"
   stem <- fs::path_ext_remove(out_file)
   tmp_out <- sprintf("%s._tmp.%s", stem, ext)
   if (fs::file_exists(tmp_out)) fs::file_delete(tmp_out)
-  
+
   write_args <- list(x = r, filename = tmp_out, overwrite = TRUE, gdal = gdal_opts)
   if (!is.null(write_datatype)) write_args$datatype <- write_datatype
   if (!is.null(NAflag))        write_args$NAflag   <- NAflag
   do.call(terra::writeRaster, write_args)
-  
+
   if (fs::file_exists(out_file)) fs::file_delete(out_file)
   fs::file_move(tmp_out, out_file)
   if (!quiet) cat("Wrote:", out_file, "\n")
-  
+
   invisible(list(
     out_file = out_file,
     n_cells = terra::ncell(tmpl),

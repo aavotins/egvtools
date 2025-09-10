@@ -27,7 +27,7 @@
 #' @return Invisibly returns a `data.frame` with columns: `tile_id`, `n_rows`, `path`, `wrote`.
 #'
 #' @details
-#' Uses {sfarrow} for Parquet I/O. CRS and geometry are preserved. Designed for stable,
+#' Uses \pkg{sfarrow} for Parquet I/O. CRS and geometry are preserved. Designed for stable,
 #' idempotent outputs, deterministic filenames, and clean skipping of existing tiles.
 #'
 #' @seealso [download_vector_templates()], [tiled_buffers()]
@@ -63,8 +63,8 @@ tile_vector_grid <- function(
     overwrite  = FALSE,
     quiet      = FALSE
 ) {
-  
-  
+
+
   # deps
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -74,11 +74,11 @@ tile_vector_grid <- function(
   .need_pkg("sf",      "grid read/split")
   .need_pkg("sfarrow", "GeoParquet IO")
   .need_pkg("fs",      "filesystem ops")
-  
-  
+
+
   if (!fs::dir_exists(out_dir)) fs::dir_create(out_dir, recurse = TRUE)
   if (!fs::file_exists(grid_path)) stop("grid_path not found: ", grid_path)
-  
+
   # ---- sink safety: snapshot & restore on exit (protects against stuck sinks) ----
   orig_out <- sink.number()
   orig_msg <- sink.number(type = "message")
@@ -86,24 +86,24 @@ tile_vector_grid <- function(
     while (sink.number(type = "message") > orig_msg) sink(type = "message")
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
-  
+
   say <- function(...) if (!quiet) cat(..., "\n")
-  
-  
+
+
   # derive "base" = part of input filename before first "_"
   base <- {
     nm <- fs::path_file(grid_path)
     parts <- strsplit(nm, "_", fixed = TRUE)[[1]]
     parts[1]
   }
-  
+
   sf::sf_use_s2(FALSE)
   g <- sfarrow::st_read_parquet(grid_path)
   if (nrow(g) == 0L) stop("Grid is empty: ", grid_path)
-  
+
   # Determine tiling strategy
   by_field <- !is.null(tile_field) && tile_field %in% names(g)
-  
+
   if (by_field) {
     # Split by field (preferred)
     split_idx <- split(seq_len(nrow(g)), g[[tile_field]])
@@ -123,7 +123,7 @@ tile_vector_grid <- function(
     })
     if (!quiet) say("Tiling by chunks of ~", chunk_size, " rows (", length(tiles), " tiles).")
   }
-  
+
   res <- vector("list", length(tiles))
   for (i in seq_along(tiles)) {
     tile_id <- tiles[[i]]$tile_id
@@ -132,25 +132,25 @@ tile_vector_grid <- function(
       res[[i]] <- data.frame(tile_id = tile_id, n_rows = 0L, path = NA_character_, wrote = FALSE)
       next
     }
-    
+
     tile_sf <- g[idx, , drop = FALSE]
     out_file <- file.path(out_dir, paste0(base, "_", tile_id, ".parquet"))
-    
+
     if (fs::file_exists(out_file) && !overwrite) {
       if (!quiet) say("Skip existing: ", fs::path_file(out_file))
       res[[i]] <- data.frame(tile_id = tile_id, n_rows = nrow(tile_sf), path = out_file, wrote = FALSE)
       next
     }
-    
+
     tmp <- paste0(out_file, ".tmp")
     sfarrow::st_write_parquet(tile_sf, tmp)
     if (fs::file_exists(out_file)) fs::file_delete(out_file)
     fs::file_move(tmp, out_file)
-    
+
     if (!quiet) say("Wrote: ", fs::path_file(out_file), " (", nrow(tile_sf), " rows)")
     res[[i]] <- data.frame(tile_id = tile_id, n_rows = nrow(tile_sf), path = out_file, wrote = TRUE)
   }
-  
+
   out <- do.call(rbind, res)
   invisible(out)
 }

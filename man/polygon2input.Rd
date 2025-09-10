@@ -51,7 +51,7 @@ polygon2input(
 Default \code{"max"}.}
 
 \item{value_type}{Guides resampling \strong{if projection happens}:
-\code{"categorical"} → method \code{"near"}, \code{"continuous"} → \code{"bilinear"}. Default \code{"categorical"}.}
+\code{"categorical"} with method \code{"near"}, \code{"continuous"} with \code{"bilinear"}. Default \code{"categorical"}.}
 
 \item{project_mode}{\code{"auto"} (default; project only if misaligned), \code{"never"}, or \code{"always"}.}
 
@@ -60,7 +60,7 @@ Default \code{"max"}.}
 \item{restrict_to}{Optional raster mask (path or \code{terra} \code{SpatRaster}).}
 
 \item{restrict_values}{Optional values to keep from \code{restrict_to}: numbers (scalar/vector) and/or
-\strong{range strings} using bracket inclusivity, e.g. \code{"(0,5]"}, \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR’ed.
+\strong{range strings} using bracket inclusivity, e.g. \code{"(0,5]"}, \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR-ed.
 If \code{NULL}, keep non-NA cells of \code{restrict_to}.}
 
 \item{background_raster}{Optional path/\code{SpatRaster} used to cover remaining NAs.}
@@ -125,7 +125,7 @@ For large rasters, heavy steps (projection/mask/cover) can stream to disk via \c
 \item If \code{restrict_values} is \code{NULL}, keep \strong{non-NA} cells of \code{restrict_to}.
 \item If supplied, keep cells matching \strong{numbers} (scalar/vector) and/or \strong{ranges} using bracket
 syntax: \code{"(a,b)"} open; \code{"[a,b]"} closed; mix ends like \code{"(a,b]"}. Use \code{-inf}/\code{+inf} for unbounded,
-e.g., \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR’ed.
+e.g., \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR-ed.
 }
 \item (Optional) \strong{Cover} remaining \code{NA} cells:
 \itemize{
@@ -139,63 +139,63 @@ e.g., \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR’ed.
 \strong{Datatype & NAflag auto-chooser}
 If you do \strong{not} provide \code{write_datatype}/\code{NAflag}, the function picks:
 \itemize{
-\item \code{value_type="categorical"} → \code{write_datatype="INT2S"}, \code{NAflag=-32768}
-\item \code{value_type="continuous"} → \code{write_datatype="FLT4S"}, \code{NAflag} omitted
+\item \code{value_type="categorical"} to \code{write_datatype="INT2S"}, \code{NAflag=-32768}
+\item \code{value_type="continuous"} to \code{write_datatype="FLT4S"}, \code{NAflag} omitted
 You can always override via arguments.
 }
 
 \strong{Performance & stability}
 \itemize{
 \item For very large rasters (e.g., ~1.3B cells), set \code{terra_todisk=TRUE} and consider a fast SSD for
-\code{terra_tempdir}. This streams big operations to disk and avoids “vector memory limit” errors.
-\item Projection is often unnecessary here because rasterization targets the template’s grid; \code{"auto"}
+\code{terra_tempdir}. This streams big operations to disk and avoids "vector memory limit" errors.
+\item Projection is often unnecessary here because rasterization targets the template grid; \code{"auto"}
 will detect alignment and skip it.
 \item Writes are \strong{atomic}: a temporary file is written and then moved into place.
 }
 }
 \section{Range string syntax for restrict_values}{
 
-Use "(a,b)" for open interval, "\link{a,b}" for closed; mix ends like "(a,b]". Use -inf/+inf (or inf)
+Use \code{(a,b)} for open interval, \code{[a,b]} for closed; mix ends like \code{(a,b]}. Use -inf/+inf (or inf)
 for unbounded, e.g., "[10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]","[10,15)").
 
 [10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]: R:10,)\%22,\%20\%22(-inf,0)\%22.\%20Supply\%20multiple\%20strings\%20to\%20OR\%20them,\%20e.g.,\%20c(\%22(0,5
 }
 
 \examples{
-\dontrun{ 
-# Basic: burn constant "1", continuous output, no covering 
-polygon2input( 
+\dontrun{
+# Basic: burn constant "1", continuous output, no covering
+polygon2input(
 vector_data = my_polys_sf,
-template_path = "./Templates/TemplateRasters/template10m.tif", 
-out_path = "./Outputs", 
-file_name = "mask_const1.tif", 
-value_field = NULL, 
-constant_value = 1, 
-value_type = "continuous", 
-project_mode = "auto", 
-prepare = FALSE, 
-check_na = TRUE, 
-plot_result = TRUE, 
-overwrite = TRUE #' ) 
+template_path = "./Templates/TemplateRasters/template10m.tif",
+out_path = "./Outputs",
+file_name = "mask_const1.tif",
+value_field = NULL,
+constant_value = 1,
+value_type = "continuous",
+project_mode = "auto",
+prepare = FALSE,
+check_na = TRUE,
+plot_result = TRUE,
+overwrite = TRUE #' )
 
-# Restrict to classes 1 and 2, plus (10,20], then fill remaining NAs with 0 
-polygon2input( 
-vector_data = my_polys_sf, 
-template_path = "./Templates/TemplateRasters/template10m.tif", 
-out_path = "./Outputs", 
-file_name = "mask_restricted_bg0.tif", 
-value_field = "attr", 
-value_type = "categorical", 
-restrict_to = "./mask_classes.tif", 
-restrict_values = c(1, 2, "(10,20]"), 
-background_value = 0, 
-terra_todisk = TRUE, # stream big ops to disk 
-terra_tempdir = tempdir(), # or a fast SSD scratch 
-check_na = TRUE, 
-plot_result = TRUE, 
-plot_gaps = TRUE, 
-overwrite = TRUE 
-) 
+# Restrict to classes 1 and 2, plus (10,20], then fill remaining NAs with 0
+polygon2input(
+vector_data = my_polys_sf,
+template_path = "./Templates/TemplateRasters/template10m.tif",
+out_path = "./Outputs",
+file_name = "mask_restricted_bg0.tif",
+value_field = "attr",
+value_type = "categorical",
+restrict_to = "./mask_classes.tif",
+restrict_values = c(1, 2, "(10,20]"),
+background_value = 0,
+terra_todisk = TRUE, # stream big ops to disk
+terra_tempdir = tempdir(), # or a fast SSD scratch
+check_na = TRUE,
+plot_result = TRUE,
+plot_gaps = TRUE,
+overwrite = TRUE
+)
 }
 
 }

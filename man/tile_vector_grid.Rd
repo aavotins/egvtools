@@ -52,7 +52,7 @@ Tiling can be controlled either by an existing \code{tile_field} (preferred) or 
 automatic chunking using \code{chunk_size}.
 }
 \details{
-Uses {sfarrow} for Parquet I/O. CRS and geometry are preserved. Designed for stable,
+Uses \pkg{sfarrow} for Parquet I/O. CRS and geometry are preserved. Designed for stable,
 idempotent outputs, deterministic filenames, and clean skipping of existing tiles.
 }
 \examples{

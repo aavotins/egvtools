@@ -14,8 +14,6 @@ RoxygenNote: 7.3.2
 URL: https://aavotins.github.io/egvtools/, https://github.com/aavotins/egvtools
 BugReports: https://github.com/aavotins/egvtools/issues
 Imports: 
-    arrow,
-    cli,
     curl,
     dplyr,
     exactextractr,
@@ -38,7 +36,8 @@ Imports:
     tibble,
     tidyr,
     tools,
-    whitebox
+    whitebox,
+    stats
 Suggests: 
     covr,
     knitr,

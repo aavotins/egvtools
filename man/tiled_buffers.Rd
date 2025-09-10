@@ -5,11 +5,6 @@
 \title{Create buffered tiles from point layers}
 \source{
 Zenodo grids/points example: https://zenodo.org/records/14277114
-
-#' @examples
-\dontrun{
-tiled_buffers(buffer_mode = "sparse", split_field = "tks50km")
-}
 }
 \usage{
 tiled_buffers(
@@ -42,7 +37,7 @@ tiled_buffers(
 \item{radii_dense}{Numeric vector of radii (m) used when \code{buffer_mode = "dense"}.
 Default c(500, 1250, 3000, 10000).}
 
-\item{mapping_sparse}{Named list \strong{or} data.frame describing file→radii for
+\item{mapping_sparse}{Named list \strong{or} data.frame describing file to radii for
 \code{buffer_mode = "sparse"}. Default:
 \code{list("pts100_sauzeme.parquet" = c(500, 1250), "pts300_sauzeme.parquet" = 3000, "pts1000_sauzeme.parquet" = 10000)}.
 If a data.frame is supplied, it must have columns \code{file} and \code{radius}.}
@@ -61,7 +56,7 @@ per-feature radii (meters) for "specified". If given, \code{buffer_radius} is ig
 \item{n_workers}{Integer. Parallel workers. Default \code{max(1L, parallel::detectCores())}.}
 
 \item{os_type}{Optional character to force backend plan:
-"windows", "mac", "darwin", "linux", "slurm". Default NULL → auto-detect.}
+"windows", "mac", "darwin", "linux", "slurm". Default NULL becomes auto-detect.}
 
 \item{future_max_mem_gb}{Numeric. Max size of exported globals per worker (GiB).
 Sets \code{options(future.globals.maxSize = future_max_mem_gb * 1024^3)}. Default 4.}
@@ -92,11 +87,11 @@ The \code{buffer_mode} determines how radii are assigned:
 \itemize{
 \item \strong{"dense"}: Buffers the best-matching \code{pts100*.parquet} (prefers \code{pts100_sauzeme.parquet})
 for each tile by \code{radii_dense} (default: 500, 1250, 3000, 10000 m).
-\item \strong{"sparse"}: Uses a file→radius mapping. Default mapping:
+\item \strong{"sparse"}: Uses a file to radius mapping. Default mapping:
 \itemize{
-\item \code{pts100_sauzeme.parquet} → c(500, 1250)
-\item \code{pts300_sauzeme.parquet} → 3000
-\item \code{pts1000_sauzeme.parquet} → 10000
+\item \code{pts100_sauzeme.parquet} to c(500, 1250)
+\item \code{pts300_sauzeme.parquet} to 3000
+\item \code{pts1000_sauzeme.parquet} to 10000
 You can override this via \code{mapping_sparse} (named list or data.frame with columns \code{file}, \code{radius}).
 }
 \item \strong{"specified"}: You provide \code{points_path} and either
@@ -106,13 +101,19 @@ You can override this via \code{mapping_sparse} (named list or data.frame with c
 }
 \details{
 \itemize{
-\item Uses {sfarrow} for parquet I/O and {sf} for buffering.
+\item Uses \pkg{sfarrow} for parquet I/O and \pkg{sf} for buffering.
 \item Jobs are created \strong{per tile} (unique \code{split_field} value) and (when applicable) per radius.
 \item Workers open data from file paths (keeps RAM low).
 \item Files are written atomically (temp file then move).
 \item \strong{Safety}: jobs are de-duplicated by content \strong{and} by predicted output path, so concurrent
 workers never write to the same file.
 }
+}
+\examples{
+\dontrun{
+tiled_buffers(buffer_mode = "sparse", split_field = "tks50km")
+}
+
 }
 \seealso{
 \code{\link[=tile_vector_grid]{tile_vector_grid()}}

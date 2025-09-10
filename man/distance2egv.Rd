@@ -73,7 +73,7 @@ using Whitebox \code{wbt_fill_missing_data()}. Default \code{FALSE}.}
 \item{gdal_opts}{GDAL creation options (merged with tuned defaults).
 Default \code{c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")}.}
 
-\item{write_datatype}{Terra datatype for writing. Default \code{NULL} → \code{"FLT4S"}.}
+\item{write_datatype}{Terra datatype for writing. Default \code{NULL} will be coded as \code{"FLT4S"}.}
 
 \item{terra_memfrac}{\code{terraOptions(memfrac=...)}. Default \code{0.7}.}
 
@@ -108,7 +108,7 @@ templates from https://zenodo.org/records/14497070 (download via the function
 to the 100 m template. It only warns if CRSs differ. For rare cases, set
 \code{project_to_template_input = TRUE} and provide \code{template_input} (10 m) to reproject
 the input once at the start. Distance is computed in the (possibly reprojected)
-input’s map units.
+inputs map units.
 
 \strong{Selecting class values:} \code{values_as_one} accepts any-length vector combining:
 \itemize{
@@ -124,7 +124,7 @@ cells are considered sources.
 
 \strong{Auto alignment choice:} If input distance grid and the 100 m template are
 same-CRS, bounding boxes match, and the template resolution is an \strong{integer multiple}
-of the input resolution (e.g., 10 m → 100 m), the function uses
+of the input resolution (e.g., 10 m to 100 m), the function uses
 \code{terra::aggregate(..., fun=mean)} (fast), followed by a light
 \code{resample(..., "near")} to lock onto the template grid. Otherwise, it falls back
 to \code{terra::resample(..., method="mean")}.
@@ -161,7 +161,7 @@ do \code{aggregate(mean)} then \code{resample("near")}.
 }
 
 Console safety: uses \code{cat()} for progress and snapshots/restores sink state on exit
-so your console won’t remain “sunk” after interrupts.
+so your console will not remain "sunk" after interrupts.
 
 [400,600)"\verb{, }"(400,600]: R:400,600)\%22\%60,\%20\%60\%22(400,600
 }

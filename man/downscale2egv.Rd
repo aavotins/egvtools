@@ -122,7 +122,7 @@ continuous inputs use \code{"bilinear"}.
 \item \strong{Fast crop}: transforms the grid bbox to the template CRS, expands by \code{buffer_m},
 crops the raw raster early to minimise work.
 \item \strong{Method auto-choice}: \code{"near"} for integer/factor rasters, otherwise \code{"bilinear"}.
-\item \strong{Align}: \code{terra::project(raw_crop, template, method)} → \code{terra::mask(..., template)}.
+\item \strong{Align}: \code{terra::project(raw_crop, template, method)} then \code{terra::mask(..., template)}.
 \item \strong{Gaps}: optional internal NA counts on the template footprint only.
 \item \strong{Gap fill (optional)}: Whitebox \code{wbt_fill_missing_data}, with window auto-sized from
 the widest gap (or user \code{filter_size_cells}).
@@ -136,7 +136,7 @@ output CRS \strong{forced to template WKT/EPSG} so \code{crs(out) == crs(templat
 }
 
 \strong{IDW smoothing}
-Aggregate → points → IDW back to template. Controls:
+Aggregate to points to IDW back to template. Controls:
 \itemize{
 \item \code{smooth_radius_km} search radius (km; converted to template units),
 \item \code{smooth_agg_factor} aggregation factor before point creation,

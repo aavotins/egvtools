@@ -14,7 +14,7 @@
 #' - `downscale2egv()` — downscale coarse rasters to template grid and optionally smooth with IDW.
 #' - `distance2egv()` — distances to features with optional gap filling at the edges.
 #' - `input2egv()` — normalize/align inputs to EGV outputs with guards.
-#' - `landscape_function()` — {landscapemetrics} landscape-level per-zone metrics, tiled.
+#' - `landscape_function()` — \pkg{landscapemetrics} landscape-level per-zone metrics, tiled.
 #' - `radius_function()` — multi-scale zonal statistics (dense/sparse).
 #'
 #' @section Reproducibility helpers:

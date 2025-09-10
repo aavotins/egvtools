@@ -12,10 +12,10 @@
 #' The `buffer_mode` determines how radii are assigned:
 #' - **"dense"**: Buffers the best-matching `pts100*.parquet` (prefers `pts100_sauzeme.parquet`)
 #'   for each tile by `radii_dense` (default: 500, 1250, 3000, 10000 m).
-#' - **"sparse"**: Uses a file→radius mapping. Default mapping:
-#'     * `pts100_sauzeme.parquet` → c(500, 1250)
-#'     * `pts300_sauzeme.parquet` → 3000
-#'     * `pts1000_sauzeme.parquet` → 10000
+#' - **"sparse"**: Uses a file to radius mapping. Default mapping:
+#'     * `pts100_sauzeme.parquet` to c(500, 1250)
+#'     * `pts300_sauzeme.parquet` to 3000
+#'     * `pts1000_sauzeme.parquet` to 10000
 #'   You can override this via `mapping_sparse` (named list or data.frame with columns `file`, `radius`).
 #' - **"specified"**: You provide `points_path` and either
 #'   `buffer_radius` (uniform, one or more fixed radii) **or** `radius_field`
@@ -28,7 +28,7 @@
 #' @param buffer_mode Character. One of "dense", "sparse", "specified". Default "dense".
 #' @param radii_dense Numeric vector of radii (m) used when `buffer_mode = "dense"`.
 #'   Default c(500, 1250, 3000, 10000).
-#' @param mapping_sparse Named list **or** data.frame describing file→radii for
+#' @param mapping_sparse Named list **or** data.frame describing file to radii for
 #'   `buffer_mode = "sparse"`. Default:
 #'   `list("pts100_sauzeme.parquet" = c(500, 1250),
 #'         "pts300_sauzeme.parquet" = 3000,
@@ -43,7 +43,7 @@
 #' @param split_field Character. Field in the point data that defines tiles. Default "tks50km".
 #' @param n_workers Integer. Parallel workers. Default `max(1L, parallel::detectCores())`.
 #' @param os_type Optional character to force backend plan:
-#'   "windows", "mac", "darwin", "linux", "slurm". Default NULL → auto-detect.
+#'   "windows", "mac", "darwin", "linux", "slurm". Default NULL becomes auto-detect.
 #' @param future_max_mem_gb Numeric. Max size of exported globals per worker (GiB).
 #'   Sets `options(future.globals.maxSize = future_max_mem_gb * 1024^3)`. Default 4.
 #' @param overwrite Logical. Overwrite existing outputs? Default FALSE.
@@ -54,7 +54,7 @@
 #'   `radius_field`, `out_file`, `wrote`.
 #'
 #' @details
-#' - Uses {sfarrow} for parquet I/O and {sf} for buffering.
+#' - Uses \pkg{sfarrow} for parquet I/O and \pkg{sf} for buffering.
 #' - Jobs are created **per tile** (unique `split_field` value) and (when applicable) per radius.
 #' - Workers open data from file paths (keeps RAM low).
 #' - Files are written atomically (temp file then move).
@@ -64,11 +64,11 @@
 #' @seealso [tile_vector_grid()]
 #' @source Zenodo grids/points example: https://zenodo.org/records/14277114
 #'
-#'#' @examples
+#' @examples
 #' \dontrun{
 #' tiled_buffers(buffer_mode = "sparse", split_field = "tks50km")
 #' }
-#' 
+#'
 #' @importFrom fs dir_exists dir_create dir_ls file_exists path_file is_file file_delete file_move
 #' @importFrom sfarrow st_read_parquet st_write_parquet
 #' @importFrom sf st_buffer st_is_empty st_make_valid st_geometry st_geometry<- sf_use_s2
@@ -95,7 +95,7 @@ tiled_buffers <- function(
     overwrite      = FALSE,
     quiet          = FALSE
 ) {
-  
+
   # deps
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -107,9 +107,9 @@ tiled_buffers <- function(
   .need_pkg("fs",      "filesystem ops")
   # Parallel (only if used):
   if (n_workers > 1) { .need_pkg("future","parallel"); .need_pkg("furrr","parallel mapping") }
-  
+
   if (!fs::dir_exists(out_dir)) fs::dir_create(out_dir, recurse = TRUE)
-  
+
   # ---- sink safety: snapshot & restore on exit (protects against stuck sinks) ----
   orig_out <- sink.number()
   orig_msg <- sink.number(type = "message")
@@ -117,17 +117,17 @@ tiled_buffers <- function(
     while (sink.number(type = "message") > orig_msg) sink(type = "message")
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
-  
+
   say <- function(...) if (!quiet) cat(..., "\n")
-  
-  
-  
+
+
+
   # ---- preserve caller's plan and options; restore on exit ----
   old_plan <- future::plan()
   on.exit(future::plan(old_plan), add = TRUE)
   old_opts <- options(future.globals.maxSize = as.numeric(future_max_mem_gb) * (1024^3))
   on.exit(options(old_opts), add = TRUE)
-  
+
   # ---- choose parallel backend ----
   plan_auto <- function(os_detected) {
     if (!is.null(os_detected) && os_detected == "slurm") {
@@ -158,13 +158,13 @@ tiled_buffers <- function(
     tolower(Sys.info()[["sysname"]])
   }
   plan_auto(detect_os())
-  
+
   # ---- helpers (exported to workers via globals=TRUE) ----
   get_base <- function(fname) {
     parts <- strsplit(fname, "_", fixed = TRUE)[[1]]
     parts[1]
   }
-  
+
   # Read only the split_field using sfarrow (columns=); fallback to full read
   list_tiles <- function(pq_file, split_field) {
     x <- tryCatch(
@@ -178,7 +178,7 @@ tiled_buffers <- function(
     if (!nrow(x)) return(character(0))
     unique(x[[split_field]])
   }
-  
+
   read_points <- function(p) {
     sf::sf_use_s2(FALSE)
     x <- sfarrow::st_read_parquet(p)
@@ -188,7 +188,7 @@ tiled_buffers <- function(
     }
     x
   }
-  
+
   write_parquet_atomic <- function(obj, out_file) {
     tmp <- paste0(out_file, ".tmp")
     sfarrow::st_write_parquet(obj, tmp)
@@ -196,7 +196,7 @@ tiled_buffers <- function(
     fs::file_move(tmp, out_file)
     out_file
   }
-  
+
   predict_out_r <- function(input, tileid, r, out_dir) {
     base <- get_base(fs::path_file(input))
     file.path(out_dir, sprintf("%s_r%s_%s.parquet", base, as.integer(r), as.character(tileid)))
@@ -205,7 +205,7 @@ tiled_buffers <- function(
     base <- get_base(fs::path_file(input))
     file.path(out_dir, sprintf("%s_varradius_%s.parquet", base, as.character(tileid)))
   }
-  
+
   # Buffer a single (file, tileid) with a constant radius
   do_buffer_const <- function(in_file, tileid, r, split_field, out_dir, overwrite) {
     pts <- read_points(in_file)
@@ -213,61 +213,61 @@ tiled_buffers <- function(
     if (!split_field %in% names(pts)) stop("split_field '", split_field, "' not found in: ", in_file)
     pts_t <- pts[pts[[split_field]] == tileid, , drop = FALSE]
     if (!nrow(pts_t)) return(NULL)
-    
+
     out_file <- predict_out_r(in_file, tileid, r, out_dir)
     if (fs::file_exists(out_file) && !overwrite) {
       return(data.frame(input = in_file, tileid = tileid, mode = "const",
                         radius_m = r, radius_field = NA_character_,
                         out_file = out_file, wrote = FALSE))
     }
-    
+
     buf <- sf::st_buffer(pts_t, dist = r)
     keep <- intersect(c("id","ID","grid_id","cell_id", split_field), names(pts_t))
     if (length(keep)) {
       buf <- cbind(pts_t[keep], sf::st_geometry(buf))
       sf::st_geometry(buf) <- "geometry"
     }
-    
+
     write_parquet_atomic(buf, out_file)
     data.frame(input = in_file, tileid = tileid, mode = "const",
                radius_m = r, radius_field = NA_character_,
                out_file = out_file, wrote = TRUE)
   }
-  
+
   # Buffer a single (file, tileid) using per-feature radius_field
   do_buffer_field <- function(in_file, tileid, field, split_field, out_dir, overwrite) {
     pts <- read_points(in_file)
     if (!nrow(pts)) return(NULL)
     if (!split_field %in% names(pts)) stop("split_field '", split_field, "' not found in: ", in_file)
     if (!field %in% names(pts)) stop("radius_field '", field, "' not found in: ", in_file)
-    
+
     pts_t <- pts[pts[[split_field]] == tileid, , drop = FALSE]
     if (!nrow(pts_t)) return(NULL)
-    
+
     dists <- pts_t[[field]]
     if (!is.numeric(dists)) stop("radius_field must be numeric (meters).")
-    
+
     out_file <- predict_out_field(in_file, tileid, out_dir)
     if (fs::file_exists(out_file) && !overwrite) {
       return(data.frame(input = in_file, tileid = tileid, mode = "field",
                         radius_m = NA_real_, radius_field = field,
                         out_file = out_file, wrote = FALSE))
     }
-    
+
     buf <- sf::st_buffer(pts_t, dist = dists)
     keep <- intersect(c("id","ID","grid_id","cell_id", split_field, field), names(pts_t))
     if (length(keep)) {
       buf <- cbind(pts_t[keep], sf::st_geometry(buf))
       sf::st_geometry(buf) <- "geometry"
     }
-    
+
     write_parquet_atomic(buf, out_file)
     data.frame(input = in_file, tileid = tileid, mode = "field",
                radius_m = NA_real_, radius_field = field,
                out_file = out_file, wrote = TRUE)
   }
-  
-  # ---- build jobs per mode (file × tile × radii/field) ----
+
+  # ---- build jobs per mode (file by tile by radii/field) ----
   if (buffer_mode == "dense") {
     if (!fs::dir_exists(in_dir)) stop("in_dir not found: ", in_dir)
     all_files <- fs::dir_ls(in_dir, recurse = FALSE, type = "file")
@@ -276,20 +276,20 @@ tiled_buffers <- function(
     if (!length(cand)) stop("No pts*.parquet found in: ", in_dir)
     target <- cand[grepl("(?i)^pts100_sauzeme\\.parquet$", fs::path_file(cand))]
     if (!length(target)) target <- cand[1]
-    
+
     if (!length(radii_dense)) stop("radii_dense must have at least one element.")
     tiles <- list_tiles(target, split_field)
     if (!length(tiles)) stop("No tiles found in split_field '", split_field, "' of: ", target)
-    
+
     jobs <- expand.grid(input = target, tileid = tiles, r = radii_dense, stringsAsFactors = FALSE)
     mode_tag <- "dense"
-    
+
   } else if (buffer_mode == "sparse") {
     if (!fs::dir_exists(in_dir)) stop("in_dir not found: ", in_dir)
     all_files <- fs::dir_ls(in_dir, recurse = FALSE, type = "file")
     files <- all_files[grepl("(?i)^pts.*\\.parquet$", fs::path_file(all_files))]
     if (!length(files)) stop("No pts*.parquet found in: ", in_dir)
-    
+
     # normalize mapping to data.frame(file, radius)
     if (is.list(mapping_sparse) && !is.data.frame(mapping_sparse)) {
       map_df <- do.call(rbind, lapply(names(mapping_sparse), function(nm) {
@@ -306,7 +306,7 @@ tiled_buffers <- function(
       stop("mapping_sparse must be a named list or a data.frame with columns 'file' and 'radius'.")
     }
     if (!nrow(map_df)) stop("mapping_sparse resolved to zero rows.")
-    
+
     # resolve mapping file names to actual paths in in_dir (case-insensitive)
     resolve_file <- function(pat) {
       hits <- files[tolower(fs::path_file(files)) == tolower(pat)]
@@ -316,7 +316,7 @@ tiled_buffers <- function(
     map_df$path <- vapply(map_df$file, resolve_file, character(1))
     map_df <- map_df[!is.na(map_df$path), , drop = FALSE]
     if (!nrow(map_df)) stop("No mapping entries matched files in: ", in_dir)
-    
+
     # enumerate tiles per file, then radii
     job_list <- list()
     for (k in seq_len(nrow(map_df))) {
@@ -330,14 +330,14 @@ tiled_buffers <- function(
     if (!length(job_list)) stop("No tiles found for mapping across files.")
     jobs <- do.call(rbind, job_list)
     mode_tag <- "sparse"
-    
+
   } else if (buffer_mode == "specified") {
     if (is.null(points_path) || !fs::is_file(points_path)) {
       stop("When buffer_mode='specified', provide a valid points_path.")
     }
     tiles <- list_tiles(points_path, split_field)
     if (!length(tiles)) stop("No tiles found in split_field '", split_field, "' of: ", points_path)
-    
+
     if (!is.null(radius_field)) {
       jobs <- data.frame(input = points_path, tileid = tiles, field = radius_field, stringsAsFactors = FALSE)
       mode_tag <- "specified_field"
@@ -348,11 +348,11 @@ tiled_buffers <- function(
       jobs <- expand.grid(input = points_path, tileid = tiles, r = as.numeric(buffer_radius), stringsAsFactors = FALSE)
       mode_tag <- "specified_const"
     }
-    
+
   } else {
     stop("buffer_mode must be one of: 'dense','sparse','specified'.")
   }
-  
+
   # ---- SAFETY: dedup jobs (by content and by predicted out path) ----
   jobs <- unique(jobs)
   jobs$.out_file <- if ("r" %in% names(jobs)) {
@@ -361,7 +361,7 @@ tiled_buffers <- function(
     mapply(predict_out_field, jobs$input, jobs$tileid, MoreArgs = list(out_dir = out_dir), USE.NAMES = FALSE)
   }
   jobs <- jobs[!duplicated(jobs$.out_file), , drop = FALSE]
-  
+
   # ---- run jobs (export helpers via globals=TRUE so workers can see them) ----
   opts <- furrr::furrr_options(globals = TRUE)
   if (mode_tag %in% c("dense","sparse","specified_const")) {
@@ -380,10 +380,10 @@ tiled_buffers <- function(
     )
   }
   res <- do.call(rbind, out)
-  
+
   if (!quiet) {
     wrote <- sum(res$wrote, na.rm = TRUE)
-    say("tiled_buffers complete. Wrote ", wrote, " / ", nrow(res), " files → ", out_dir)
+    say("tiled_buffers complete. Wrote ", wrote, " / ", nrow(res), " files at ", out_dir)
   }
   invisible(res)
 }

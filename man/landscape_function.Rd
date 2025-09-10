@@ -42,7 +42,7 @@ landscape_function(
 \arguments{
 \item{landscape}{SpatRaster or path(s) to .tif (class labels). Multi-layer supported.}
 
-\item{zones}{sf polygons or path to {sfarrow} GeoParquet. Default \code{"./Templates/TemplateGrids/tikls500_sauzeme.parquet"}.}
+\item{zones}{sf polygons or path to \pkg{sfarrow} GeoParquet. Default \code{"./Templates/TemplateGrids/tikls500_sauzeme.parquet"}.}
 
 \item{id_field}{Zone id field (default \code{"rinda500"}).}
 
@@ -76,7 +76,7 @@ landscape_function(
 \item{write_datatype}{terra datatype string; if \code{NULL}, defaults to \code{"FLT4S"}.}
 
 \item{NAflag}{Numeric NA value to write; if \code{NA}/\code{NULL}, a sensible default is chosen
-(\verb{FLT*→-9999}, \verb{INT2S→-32768}, \verb{INT4S→-2147483648}).}
+(\code{FLT* to -9999}, \verb{INT2S to -32768}, \verb{INT4S to -2147483648}).}
 
 \item{keep_tiles}{Logical; keep temp tiles dir (debug). Default \code{FALSE}.}
 
@@ -117,15 +117,15 @@ Attributes: \code{"tile_dir"} (path or \code{NULL}), \code{"run_params"} (list).
 }
 }
 \description{
-Computes a {landscapemetrics} metric (default \code{"lsm_l_shdi"})—optionally with
-extra \code{lm_args}—that yields one value per zone and \strong{per input layer}. Runs tile-by-tile
+Computes a \pkg{landscapemetrics} metric (default \code{"lsm_l_shdi"}), optionally with
+extra \code{lm_args}, that yields one value per zone and \strong{per input layer}. Runs tile-by-tile
 (by \code{tile_field}), writes per-tile rasters, merges to final per-layer GeoTIFF(s),
 then performs \strong{gap analysis} (NA count within the template footprint and optional
 maximum gap width) and \strong{optional IDW gap filling} via WhiteboxTools.
 Returns a compact \strong{data.frame} with per-layer stats and timing.
 
 Console safety: snapshots/restores sink state on exit; progress via \code{cat()},
-so interrupts won’t leave your console “sunk”.
+so interrupts will not leave your console "sunk".
 }
 \details{
 \strong{Workflow}
@@ -146,7 +146,7 @@ and write tile raster. Skips empty crops/joins cleanly.
 }
 \item \strong{Merge per layer}
 \itemize{
-\item VRT over all tile rasters → final GeoTIFF with tuned GDAL options (LZW, tiling, BIGTIFF=IF_SAFER, threads).
+\item VRT over all tile rasters to final GeoTIFF with tuned GDAL options (LZW, tiling, BIGTIFF=IF_SAFER, threads).
 \item CRS is \strong{forced to the template WKT} so \code{crs(output) == crs(template)} string-matches.
 }
 \item \strong{Gap analysis & optional fill (per layer)}
@@ -186,7 +186,7 @@ print(res_tbl)
 #' ## --- Total edge length per zone (ignore outside map boundary) ---
 ## Using a binary "water vs other" landscape, compute lsm_l_te per 500 m zone.
 rez_edges <- landscape_function(
-  landscape        = "./Rastri_10m/Ainava_vienk_mask.tif",         # categorical classes: water or else
+  landscape        = "./Rastri_10m/Ainava_vienk_mask.tif",
   zones            = "./Templates/TemplateGrids/tikls500_sauzeme.parquet",
   id_field         = "rinda500",
   tile_field       = "tks50km",

@@ -12,11 +12,11 @@
 #'    producing one value per polygon per layer; join to the appropriate 100 m grid (or its
 #'    parent for r3000/r10000), and rasterize to the cropped template via `fasterize`,
 #'    writing **per-tile GeoTIFFs**.
-#' 3. For each `layer × radius`: VRT-merge tiles → **project to the full template grid**
-#'    → mask to the template footprint.
+#' 3. For each `layer at radius`: VRT-merge tiles then **project to the full template grid**
+#'    then mask to the template footprint.
 #' 4. **Gap analysis & optional fill:** count NA gaps inside the template. If `fill_missing = TRUE`
 #'    and gaps exist, estimate max gap width on the template (`terra::distance()` on a fillable
-#'    mask), set Whitebox `filter = 2 * ceil(max_gap / pixel_size)` with **min clamp = 3**, 
+#'    mask), set Whitebox `filter = 2 * ceil(max_gap / pixel_size)` with **min clamp = 3**,
 #'    run `whitebox::wbt_fill_missing_data()`, then mask again.
 #' 5. **CRS guard & write:** set `terra::crs(out) <- terra::crs(template, proj = FALSE)` and
 #'    write with LZW tiling via **atomic writes**.
@@ -27,11 +27,11 @@
 #' Handles single vectors, data.frames (`"mean.Layer"` or layer names), and lists
 #' (one element per feature: numeric vectors or 1-row data.frames). Clear error otherwise.
 #'
-#' **Per-worker cache**  
+#' **Per-worker cache**
 #' Large `sf` objects like a ~6.5M-feature `tikls100` are **loaded once per worker**
 #' to avoid repeated I/O and pointer invalidation issues in parallel sessions.
 #'
-#' **CRS guard**  
+#' **CRS guard**
 #' Outputs copy the CRS string from the template using
 #' `terra::crs(template, proj = FALSE)` to keep a Proj.4-style string for maximal compatibility.
 #'
@@ -88,7 +88,9 @@
 #'   IDW_weight     = 2
 #' )
 #' }
-#' 
+#'
+#' @importFrom stats setNames
+#' @importFrom rlang .data :=
 #' @importFrom terra rast crop mask project writeRaster vrt global distance ifel crs res as.int
 #' @importFrom sf st_drop_geometry st_as_sfc st_bbox st_buffer st_geometry
 #' @importFrom dplyr mutate select left_join case_when filter rename_with starts_with
@@ -138,7 +140,7 @@ radius_function <- function(
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
   say <- function(...) if (!quiet) cat(..., "\n")
-  
+
   # ---- deps ----
   .need_pkg <- function(p, why) {
     if (!requireNamespace(p, quietly = TRUE)) {
@@ -160,7 +162,7 @@ radius_function <- function(
   .need_pkg("whitebox",     "gap filling")
   .need_pkg("glue",         "paths & messages")
   .need_pkg("tidyr",        "file name parsing")
-  
+
   # ---- terra options (set & restore) ----
   old_opt <- NULL
   utils::capture.output({ old_opt <- terra::terraOptions() })
@@ -172,15 +174,15 @@ radius_function <- function(
     terra::terraOptions(memfrac = terra_memfrac, tempdir = terra_tempdir, progress = FALSE)
     if (!is.na(terra_todisk)) terra::terraOptions(todisk = isTRUE(terra_todisk))
   })
-  
+
   options(future.globals.maxSize = future_max_size)
-  
+
   # ---- basic checks ----
   if (!fs::dir_exists(output_dir)) fs::dir_create(output_dir, recurse = TRUE)
   stopifnot(length(input_layers) == length(layer_prefixes))
   names(input_layers) <- layer_prefixes
   if (length(extract_fun) != 1) stop("`extract_fun` must be a single function or string (e.g., \"mean\").")
-  
+
   # ---- parallel plan ----
   on_slurm <- function() any(nzchar(Sys.getenv(c("SLURM_JOB_ID","SLURM_CPUS_ON_NODE","SLURM_JOB_NODELIST"))))
   safe_plan <- function(n_workers = 1, os_type = "auto") {
@@ -201,15 +203,15 @@ radius_function <- function(
   old_plan <- future::plan()
   on.exit(try(future::plan(old_plan), silent = TRUE), add = TRUE)
   safe_plan(n_workers = n_workers, os_type = os_type)
-  
+
   # ---- list tiles & radii files ----
   kvadratiem <- tibble::tibble(fails_c = list.files(kvadrati_path, full.names = TRUE)) |>
     dplyr::mutate(cels_c = .data$fails_c, numurs = substr(basename(.data$fails_c), 10, 13))
-  
+
   kv_rad <- tibble::tibble(fails_r = list.files(radii_path, full.names = TRUE)) |>
     dplyr::mutate(cels_radiuss = .data$fails_r, filename = basename(.data$fails_r)) |>
     tidyr::separate(.data$filename, into = c("sakums","veids","lapa","beigas"), remove = FALSE)
-  
+
   if (identical(radius_mode, "sparse")) {
     kv_rad <- dplyr::filter(
       kv_rad,
@@ -220,7 +222,7 @@ radius_function <- function(
   } else if (identical(radius_mode, "dense")) {
     kv_rad <- dplyr::filter(kv_rad, .data$sakums == "pts100" & .data$veids %in% c("r500","r1250","r3000","r10000"))
   } else stop("Invalid `radius_mode`. Use 'sparse' or 'dense'.")
-  
+
   kv_rad <- tidyr::pivot_wider(
     kv_rad,
     id_cols   = .data$lapa,
@@ -230,17 +232,17 @@ radius_function <- function(
   ) |>
     dplyr::rename_with(~ gsub("fails_r_", "fails_", .x), dplyr::starts_with("fails_r_")) |>
     dplyr::rename_with(~ gsub("cels_radiuss_", "cels_", .x), dplyr::starts_with("cels_radiuss_"))
-  
+
   kvadrati <- dplyr::left_join(kvadratiem, kv_rad, by = dplyr::join_by(numurs == lapa))
   kvadrati_list <- split(kvadrati, kvadrati$numurs)
-  
+
   # ---- template (final alignment) ----
   template_r_full <- terra::rast(template_path)
-  
+
   # ---- GDAL options ----
   tuned_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
   gdal_opts <- unique(c(gdal_opts, tuned_defaults))
-  
+
   # ---- atomic write helper ----
   .write_r <- function(r, path, gdal_opts, write_datatype, NAflag) {
     ext <- tools::file_ext(path); ext <- if (nzchar(ext)) ext else "tif"
@@ -254,18 +256,17 @@ radius_function <- function(
     if (file.exists(path)) try(unlink(path), silent = TRUE)
     file.rename(tmp, path)
   }
-  
+
   # ---- per-worker cache for heavy opens ----
   .get_cached <- function(name, loader) {
-    if (exists(name, envir = .GlobalEnv, inherits = FALSE)) {
-      get(name, envir = .GlobalEnv, inherits = FALSE)
-    } else {
-      x <- loader()
-      assign(name, x, envir = .GlobalEnv)
-      x
-    }
+    x <- .egv_cache_get(name)
+    if (!is.null(x)) return(x)
+    x <- loader()
+    .egv_cache_set(name, x)
+    x
   }
-  
+
+
   # ---- parser for exact_extract output (robust to list/data.frame/vector) ----
   .parse_extract <- function(res, layer_names, fun_name_or_fn, n_features) {
     # returns named list: layer -> numeric vector length n_features
@@ -325,7 +326,7 @@ radius_function <- function(
         }
       }
       mat <- lapply(res, norm_one)                      # list of named numeric vectors
-      # bind by row (features) → columns ordered by layer_names
+      # bind by row (features) then columns ordered by layer_names
       M <- do.call(rbind, lapply(mat, function(v) setNames(v[layer_names], layer_names)))
       out <- setNames(vector("list", length(layer_names)), layer_names)
       for (i in seq_along(layer_names)) out[[i]] <- as.numeric(M[, i])
@@ -333,7 +334,7 @@ radius_function <- function(
     }
     stop("Unsupported result type from exact_extract(): ", class(res)[1])
   }
-  
+
   # ---- per-tile worker (extract once per radius) ----
   process_tile <- function(solis, kv_row,
                            tikls100_path, template_path,
@@ -341,19 +342,19 @@ radius_function <- function(
                            output_dir, radii, extract_fun,
                            gdal_opts, write_datatype, NAflag,
                            terra_tempdir) {
-    
+
     say("Processing tile: ", solis)
-    
+
     # cache heavy opens ONCE per worker
     template_100 <- .get_cached(".tmpl_cache", function() terra::rast(template_path))
     tikls100     <- .get_cached(".tikls100_cache", function() sfarrow::st_read_parquet(tikls100_path))
     stack_all    <- .get_cached(".stack_cache", function() {
       rs <- terra::rast(input_layers); names(rs) <- layer_prefixes; rs
     })
-    
+
     # 1ha polygons for this tile
     sunas <- sfarrow::st_read_parquet(kv_row$cels_c)
-    
+
     # available radius polygons
     r_polys <- purrr::map(purrr::set_names(radii), function(rad) {
       path <- kv_row[[paste0("cels_", rad)]]
@@ -362,17 +363,17 @@ radius_function <- function(
         if (!inherits(vec, "sf") || is.null(sf::st_geometry(vec))) NULL else vec
       } else NULL
     })
-    
+
     # bbox of the largest available radius + 1000 m buffer
     largest <- NULL
     for (rad in rev(radii)) if (!is.null(r_polys[[rad]])) { largest <- r_polys[[rad]]; break }
     if (is.null(largest)) stop("No valid radius polygon for tile ", solis)
-    
+
     telpa2        <- sf::st_buffer(sf::st_as_sfc(sf::st_bbox(largest)), dist = 1000)
     template_crop <- terra::crop(template_100, telpa2)
     templateRL    <- raster::raster(template_crop)  # grid for fasterize
     stack_crop    <- terra::crop(stack_all, telpa2)
-    
+
     # parent grids for 3 km and 10 km joins
     sunas300 <- if (!is.null(r_polys$r3000)) {
       vals <- r_polys$r3000$rinda300; dplyr::filter(tikls100, .data$rinda300 %in% vals)
@@ -380,12 +381,12 @@ radius_function <- function(
     sunas1000 <- if (!is.null(r_polys$r10000)) {
       vals <- r_polys$r10000$ID1km;  dplyr::filter(tikls100, .data$ID1km %in% vals)
     } else NULL
-    
+
     # ---- extract ONCE per radius over the (cropped) stack ----
     for (rad in radii) {
       vec <- r_polys[[rad]]
       if (is.null(vec)) next
-      
+
       res <- suppressWarnings(
         exactextractr::exact_extract(stack_crop, vec, fun = extract_fun)
       )
@@ -393,7 +394,7 @@ radius_function <- function(
         res, layer_names = names(stack_crop),
         fun_name_or_fn = extract_fun, n_features = nrow(vec)
       )
-      
+
       # choose join base and key
       join_key <- dplyr::case_when(
         rad == "r500"   ~ "id",
@@ -403,31 +404,31 @@ radius_function <- function(
       )
       joined_base <- switch(rad, r500 = sunas, r1250 = sunas, r3000 = sunas300, r10000 = sunas1000)
       if (is.null(joined_base)) next
-      
+
       # For each layer: build xdf and rasterize
       for (prefix in names(vals_by_layer)) {
         v <- vals_by_layer[[prefix]]
         if (length(v) != nrow(vec)) stop("Row mismatch for extracted values vs polygons at ", rad, " layer ", prefix)
-        
+
         xdf <- sf::st_drop_geometry(vec)
         xdf <- dplyr::select(xdf, dplyr::all_of(join_key))
         xdf$vertibas <- as.numeric(v)
-        
+
         joined <- dplyr::left_join(joined_base, xdf, by = join_key)
-        
+
         rr <- fasterize::fasterize(joined, templateRL, field = "vertibas")
         rr <- terra::rast(rr)
         rr <- terra::mask(rr, template_crop)
-        
+
         out_path <- glue::glue("{output_dir}/{prefix}_{rad}/{prefix}_{rad}_{solis}.tif")
         dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
         .write_r(rr, out_path, gdal_opts, write_datatype, NAflag)
       }
     }
-    
+
     return(solis)
   }
-  
+
   # ---- run tiles in parallel ----
   furrr::future_map2(
     .x = names(kvadrati_list),
@@ -441,43 +442,43 @@ radius_function <- function(
     .progress = TRUE,
     .options = furrr::furrr_options(seed = TRUE, globals = FALSE)
   )
-  
-  # ---- merge tiles → project/mask → gap analysis → optional fill → write ----
+
+  # ---- merge tiles then project/mask then gap analysis then optional fill then write ----
   template_r <- template_r_full
   pix_size   <- mean(terra::res(template_r))
   results_ls <- list()
-  
+
   for (prefix in layer_prefixes) {
     for (rad in radii) {
       tif_dir   <- glue::glue("{output_dir}/{prefix}_{rad}")
       out_files <- list.files(tif_dir, pattern = "\\.tif$", full.names = TRUE)
       if (!length(out_files)) next
-      
+
       vrt <- terra::vrt(out_files)
       names(vrt) <- glue::glue("{prefix}_{rad}")
-      
+
       temp_raw <- file.path(terra_tempdir, glue::glue("mosaic_{prefix}_{rad}.tif"))
       .write_r(vrt, temp_raw, gdal_opts, write_datatype, NAflag)
-      
+
       proj_r <- terra::project(terra::rast(temp_raw), template_r)
       proj_r <- terra::mask(proj_r, template_r)
-      
+
       robi <- is.na(proj_r) & !is.na(template_r)
       gaps_before <- as.integer(terra::global(terra::as.int(robi), fun = "sum", na.rm = TRUE)[[1]])
       if (is.na(gaps_before)) gaps_before <- 0L
-      
+
       gap_filled <- FALSE
       filter_used <- NA_integer_
-      
+
       if (isTRUE(fill_missing) && gaps_before > 0L) {
         say(glue::glue("[{prefix}_{rad}] Filling {format(gaps_before, big.mark=',')} NA cells"))
         fillable <- terra::ifel(!robi, 1, NA)
         dist_r   <- terra::distance(fillable)
         max_att  <- suppressWarnings(terra::global(dist_r, fun = "max", na.rm = TRUE)[[1]])
         rm(fillable, dist_r)
-        
+
         filter_used <- max(3L, as.integer(ceiling(as.numeric(max_att) / pix_size) * 2L))  # min clamp only
-        
+
         temp_filled <- file.path(terra_tempdir, glue::glue("filled_{prefix}_{rad}.tif"))
         ok <- TRUE
         tryCatch({
@@ -492,7 +493,7 @@ radius_function <- function(
           say(glue::glue("[{prefix}_{rad}] Whitebox failed: {conditionMessage(e)}"))
           ok <<- FALSE
         })
-        
+
         if (ok && file.exists(temp_filled)) {
           proj_r <- terra::project(terra::rast(temp_filled), template_r)
           proj_r <- terra::mask(proj_r, template_r)
@@ -500,21 +501,21 @@ radius_function <- function(
           gap_filled <- TRUE
         }
       }
-      
+
       robi2 <- is.na(proj_r) & !is.na(template_r)
       gaps_after <- as.integer(terra::global(terra::as.int(robi2), fun = "sum", na.rm = TRUE)[[1]])
       if (is.na(gaps_after)) gaps_after <- 0L
-      
+
       names(proj_r) <- glue::glue("{prefix}_{rad}")
-      
+
       terra::crs(proj_r) <- terra::crs(template_r, proj = FALSE)
-      
+
       out_final <- glue::glue("{output_dir}/{prefix}_{rad}.tif")
       .write_r(proj_r, out_final, gdal_opts, write_datatype, NAflag)
-      
+
       if (file.exists(temp_raw)) unlink(temp_raw)
       if (unlink_tiles) try(unlink(tif_dir, recursive = TRUE), silent = TRUE)
-      
+
       results_ls[[length(results_ls)+1L]] <- data.frame(
         layer            = prefix,
         radius           = rad,
@@ -528,11 +529,11 @@ radius_function <- function(
       )
     }
   }
-  
+
   res_df <- if (length(results_ls)) do.call(rbind, results_ls) else
     data.frame(layer=character(), radius=character(), output_path=character(),
                n_tiles_merged=integer(), gaps_before=integer(), gaps_after=integer(),
                filter_size_used=integer(), gap_filled=logical())
-  
+
   invisible(res_df)
 }
