@@ -71,9 +71,6 @@ are set to \code{background_value} and NA cells are preserved. Outputs go to \co
 \code{background_value == 0}, otherwise \verb{bg[background_value]_}) followed by the
 original name, e.g. \code{bg10_my.tif}. Uses LZW compression and atomic writes.
 Large rasters can stream to disk with \code{terra_todisk=TRUE}.
-
-Console safety: uses \code{cat()} for progress and snapshots/restores sink state
-on exit so your console will not remain "sunk" after interrupts.
 }
 \details{
 \itemize{

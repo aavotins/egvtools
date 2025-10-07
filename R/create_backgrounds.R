@@ -8,8 +8,6 @@
 #' original name, e.g. `bg10_my.tif`. Uses LZW compression and atomic writes.
 #' Large rasters can stream to disk with `terra_todisk=TRUE`.
 #'
-#' Console safety: uses `cat()` for progress and snapshots/restores sink state
-#' on exit so your console will not remain "sunk" after interrupts.
 #'
 #' @details
 #' - Reads each input with `terra::rast()`.

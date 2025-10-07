@@ -123,9 +123,6 @@ extra \code{lm_args}, that yields one value per zone and \strong{per input layer
 then performs \strong{gap analysis} (NA count within the template footprint and optional
 maximum gap width) and \strong{optional IDW gap filling} via WhiteboxTools.
 Returns a compact \strong{data.frame} with per-layer stats and timing.
-
-Console safety: snapshots/restores sink state on exit; progress via \code{cat()},
-so interrupts will not leave your console "sunk".
 }
 \details{
 \strong{Workflow}

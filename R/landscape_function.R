@@ -8,9 +8,6 @@
 #' maximum gap width) and **optional IDW gap filling** via WhiteboxTools.
 #' Returns a compact **data.frame** with per-layer stats and timing.
 #'
-#' Console safety: snapshots/restores sink state on exit; progress via `cat()`,
-#' so interrupts will not leave your console "sunk".
-#'
 #' @details
 #' **Workflow**
 #' 1. **Inputs & CRS**

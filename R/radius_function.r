@@ -1,8 +1,7 @@
 #' Extract and Rasterize Summary Statistics from Buffered Radii Using exactextractr
 #'
 #' Extracts summary statistics from raster layers using buffered polygon zones of multiple radii
-#' and rasterizes them onto a common template grid. Supports parallel execution on SLURM clusters,
-#' Windows, macOS, and Linux.
+#' and rasterizes them onto a common template grid. Designed for parallel execution.
 #'
 #' @details
 #' **Workflow**

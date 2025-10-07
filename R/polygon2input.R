@@ -81,8 +81,9 @@
 #' @return Invisibly, a list with `out_file`, `n_cells`, `n_na_initial`, `n_na_final`, `elapsed_sec`, and `crs`.
 #'
 #' @section Range string syntax for restrict_values:
-#' Use \code{(a,b)} for open interval, \code{[a,b]} for closed; mix ends like \code{(a,b]}. Use -inf/+inf (or inf)
-#' for unbounded, e.g., "[10,)", "(-inf,0)". Supply multiple strings to OR them, e.g., c("(0,5]","[10,15)").
+#' Use `(a,b)` for open interval, `[a,b]` for closed; mix ends like `(a,b]`.
+#' Use `-inf`/`+inf` (or `inf`) for unbounded, e.g. `"[10,)"`, `"(-inf,0)"`.
+#' Supply multiple strings to OR them, e.g. `c("(0,5]","[10,15)")`.
 #'
 #' @examples
 #' \dontrun{
@@ -99,7 +100,8 @@
 #' prepare = FALSE,
 #' check_na = TRUE,
 #' plot_result = TRUE,
-#' overwrite = TRUE #' )
+#' overwrite = TRUE
+#' )
 #'
 #' # Restrict to classes 1 and 2, plus (10,20], then fill remaining NAs with 0
 #' polygon2input(
