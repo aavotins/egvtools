@@ -27,6 +27,7 @@ navbar:
     github:
       icon: fab fa-github
       href: https://github.com/aavotins/egvtools
+      aria-label: "GitHub repository"
 
 reference:
   - title: Core workflow
