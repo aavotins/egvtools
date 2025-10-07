@@ -139,7 +139,8 @@ Default <code>"max"</code>.</p></dd>
 
 <dt id="arg-restrict-values">restrict_values<a class="anchor" aria-label="anchor" href="#arg-restrict-values"></a></dt>
 <dd><p>Optional values to keep from <code>restrict_to</code>: numbers (scalar/vector) and/or
-<strong>range strings</strong> using bracket inclusivity, e.g. <code>"(0,5]"</code>, <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR-ed.
+<strong>range strings</strong> using bracket inclusivity, e.g. <code>"(0,5]"</code>,  <code>"[10,)"</code>,
+<code>"(-inf,0)"</code>. Multiple entries are OR-ed.
 If <code>NULL</code>, keep non-NA cells of <code>restrict_to</code>.</p></dd>
 
 
@@ -219,7 +220,8 @@ If <code>FALSE</code>, prefer memory. If <code>NA</code>, leave session default 
 <li><p>Apply a <strong>template mask</strong> (keeps template extent and <code>NA</code> footprint).</p></li>
 <li><p>(Optional) <strong>Restrict</strong> by <code>restrict_to</code> (path or in-memory <code>SpatRaster</code>):</p><ul><li><p>If <code>restrict_values</code> is <code>NULL</code>, keep <strong>non-NA</strong> cells of <code>restrict_to</code>.</p></li>
 <li><p>If supplied, keep cells matching <strong>numbers</strong> (scalar/vector) and/or <strong>ranges</strong> using bracket
-syntax: <code>"(a,b)"</code> open; <code>"[a,b]"</code> closed; mix ends like <code>"(a,b]"</code>. Use <code>-inf</code>/<code>+inf</code> for unbounded,
+syntax: <code>"(a,b)"</code> open; <code>"[a,b]"</code> closed; mix ends like <code>"(a,b]"</code>.
+Use <code>-inf</code>/<code>+inf</code> for unbounded,
 e.g., <code>"[10,)"</code>, <code>"(-inf,0)"</code>. Multiple entries are OR-ed.</p></li>
 </ul></li>
 <li><p>(Optional) <strong>Cover</strong> remaining <code>NA</code> cells:</p><ul><li><p>with <code>background_raster</code> (aligned to template; projected if needed), or</p></li>
@@ -244,7 +246,6 @@ will detect alignment and skip it.</p></li>
 <p>Use <code>(a,b)</code> for open interval, <code>[a,b]</code> for closed; mix ends like <code>(a,b]</code>.
 Use <code>-inf</code>/<code>+inf</code> (or <code>inf</code>) for unbounded, e.g. <code>"[10,)"</code>, <code>"(-inf,0)"</code>.
 Supply multiple strings to OR them, e.g. <code>c("(0,5]","[10,15)")</code>.</p>
-<p>[10,)"<code>, </code>"(-inf,0)"<code>. Supply multiple strings to OR them, e.g. </code>c("(0,5]: R:10,)%22%60,%20%60%22(-inf,0)%22%60.%0ASupply%20multiple%20strings%20to%20OR%20them,%20e.g.%20%60c(%22(0,5</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
