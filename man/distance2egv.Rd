@@ -162,8 +162,6 @@ do \code{aggregate(mean)} then \code{resample("near")}.
 
 Console safety: uses \code{cat()} for progress and snapshots/restores sink state on exit
 so your console will not remain "sunk" after interrupts.
-
-[400,600)"\verb{, }"(400,600]: R:400,600)\%22\%60,\%20\%60\%22(400,600
 }
 \examples{
 \dontrun{

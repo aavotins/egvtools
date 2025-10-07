@@ -60,7 +60,8 @@ Default \code{"max"}.}
 \item{restrict_to}{Optional raster mask (path or \code{terra} \code{SpatRaster}).}
 
 \item{restrict_values}{Optional values to keep from \code{restrict_to}: numbers (scalar/vector) and/or
-\strong{range strings} using bracket inclusivity, e.g. \code{"(0,5]"}, \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR-ed.
+\strong{range strings} using bracket inclusivity, e.g. \code{"(0,5]"},  \code{"[10,)"},
+\code{"(-inf,0)"}. Multiple entries are OR-ed.
 If \code{NULL}, keep non-NA cells of \code{restrict_to}.}
 
 \item{background_raster}{Optional path/\code{SpatRaster} used to cover remaining NAs.}
@@ -124,7 +125,8 @@ For large rasters, heavy steps (projection/mask/cover) can stream to disk via \c
 \itemize{
 \item If \code{restrict_values} is \code{NULL}, keep \strong{non-NA} cells of \code{restrict_to}.
 \item If supplied, keep cells matching \strong{numbers} (scalar/vector) and/or \strong{ranges} using bracket
-syntax: \code{"(a,b)"} open; \code{"[a,b]"} closed; mix ends like \code{"(a,b]"}. Use \code{-inf}/\code{+inf} for unbounded,
+syntax: \code{"(a,b)"} open; \code{"[a,b]"} closed; mix ends like \code{"(a,b]"}.
+Use \code{-inf}/\code{+inf} for unbounded,
 e.g., \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR-ed.
 }
 \item (Optional) \strong{Cover} remaining \code{NA} cells:
@@ -155,11 +157,9 @@ will detect alignment and skip it.
 }
 \section{Range string syntax for restrict_values}{
 
-Use \verb{(a,b)} for open interval, \verb{[a,b]} for closed; mix ends like \verb{(a,b]}.
+Use \code{(a,b)} for open interval, \code{[a,b]} for closed; mix ends like \code{(a,b]}.
 Use \code{-inf}/\code{+inf} (or \code{inf}) for unbounded, e.g. \code{"[10,)"}, \code{"(-inf,0)"}.
 Supply multiple strings to OR them, e.g. \code{c("(0,5]","[10,15)")}.
-
-[10,)"\verb{, }"(-inf,0)"\verb{. Supply multiple strings to OR them, e.g. }c("(0,5]: R:10,)\%22\%60,\%20\%60\%22(-inf,0)\%22\%60.\%0ASupply\%20multiple\%20strings\%20to\%20OR\%20them,\%20e.g.\%20\%60c(\%22(0,5
 }
 
 \examples{

@@ -16,6 +16,9 @@
 #' - `input2egv()` — normalize/align inputs to EGV outputs with guards.
 #' - `landscape_function()` — \pkg{landscapemetrics} landscape-level per-zone metrics, tiled.
 #' - `radius_function()` — multi-scale zonal statistics (dense/sparse).
+#' - `tile_vector_grid()` — tile template grids for chunked processing.
+#' - `tiled_buffers()` — precompute buffered tiles for multiple radii.
+#' - `create_backgrounds()` — build consistent background rasters/values.
 #'
 #' @section Reproducibility helpers:
 #' Utilities that set up inputs and structure so our (project HiQBioDiv) results
@@ -23,9 +26,6 @@
 #' - `download_raster_templates()` — fetch template rasters (Zenodo) to
 #'   canonical paths.
 #' - `download_vector_templates()` — fetch template vector grids/points.
-#' - `tile_vector_grid()` — tile template grids for chunked processing.
-#' - `tiled_buffers()` — precompute buffered tiles for multiple radii.
-#' - `create_backgrounds()` — build consistent background rasters/values.
 #'
 #' @section Design principles:
 #' - **Tiled, RAM-aware I/O**; workers open data by path (avoid big globals) and

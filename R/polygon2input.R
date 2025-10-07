@@ -5,7 +5,7 @@
 #' Rasterization targets a `raster::RasterLayer` built from the template (so grids normally match).
 #' Projection is optional (`project_mode`). Missing values are counted **only** over valid template
 #' cells. You may optionally restrict the result with a raster mask (`restrict_to`) using numeric
-#' values or **bracketed range strings** (e.g., `"(0,5]"`, `"[10,)"`). Remaining `NA` cells can be
+#' values or **bracketed range strings** (e.g., \code{"(0,5]"}, \code{"[10,)"}). Remaining `NA` cells can be
 #' filled by covering with a background raster (`background_raster`) or a constant (`background_value`).
 #' For large rasters, heavy steps (projection/mask/cover) can stream to disk via `terra_todisk=TRUE`.
 #'
@@ -22,8 +22,9 @@
 #' 5. (Optional) **Restrict** by `restrict_to` (path or in-memory `SpatRaster`):
 #'    - If `restrict_values` is `NULL`, keep **non-NA** cells of `restrict_to`.
 #'    - If supplied, keep cells matching **numbers** (scalar/vector) and/or **ranges** using bracket
-#'      syntax: `"(a,b)"` open; `"[a,b]"` closed; mix ends like `"(a,b]"`. Use `-inf`/`+inf` for unbounded,
-#'      e.g., `"[10,)"`, `"(-inf,0)"`. Multiple entries are OR-ed.
+#'      syntax: \code{"(a,b)"} open; \code{"[a,b]"} closed; mix ends like \code{"(a,b]"}.
+#'      Use \code{-inf}/\code{+inf} for unbounded,
+#'      e.g., \code{"[10,)"}, \code{"(-inf,0)"}. Multiple entries are OR-ed.
 #' 6. (Optional) **Cover** remaining `NA` cells:
 #'    - with `background_raster` (aligned to template; projected if needed), or
 #'    - with a **constant** using `background_value` (fast and memory-light).
@@ -57,7 +58,8 @@
 #' @param prepare Logical. If `TRUE`, run `st_make_valid()` and transform to template CRS. Default `TRUE`.
 #' @param restrict_to Optional raster mask (path or `terra` `SpatRaster`).
 #' @param restrict_values Optional values to keep from `restrict_to`: numbers (scalar/vector) and/or
-#'   **range strings** using bracket inclusivity, e.g. `"(0,5]"`, `"[10,)"`, `"(-inf,0)"`. Multiple entries are OR-ed.
+#'   **range strings** using bracket inclusivity, e.g. \code{"(0,5]"},  \code{"[10,)"},
+#'   \code{"(-inf,0)"}. Multiple entries are OR-ed.
 #'   If `NULL`, keep non-NA cells of `restrict_to`.
 #' @param background_raster Optional path/`SpatRaster` used to cover remaining NAs.
 #' @param background_value Numeric constant to fill where result is NA **if** no `background_raster`.
@@ -81,9 +83,9 @@
 #' @return Invisibly, a list with `out_file`, `n_cells`, `n_na_initial`, `n_na_final`, `elapsed_sec`, and `crs`.
 #'
 #' @section Range string syntax for restrict_values:
-#' Use `(a,b)` for open interval, `[a,b]` for closed; mix ends like `(a,b]`.
-#' Use `-inf`/`+inf` (or `inf`) for unbounded, e.g. `"[10,)"`, `"(-inf,0)"`.
-#' Supply multiple strings to OR them, e.g. `c("(0,5]","[10,15)")`.
+#' Use \code{(a,b)} for open interval, \code{[a,b]} for closed; mix ends like \code{(a,b]}.
+#' Use \code{-inf}/\code{+inf} (or \code{inf}) for unbounded, e.g. \code{"[10,)"}, \code{"(-inf,0)"}.
+#' Supply multiple strings to OR them, e.g. \code{c("(0,5]","[10,15)")}.
 #'
 #' @examples
 #' \dontrun{

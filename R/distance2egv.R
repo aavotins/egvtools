@@ -16,10 +16,10 @@
 #' inputs map units.
 #'
 #' **Selecting class values:** `values_as_one` accepts any-length vector combining:
-#' - numeric values (e.g., `500`, `c(610,620,630)`), and/or
+#' - numeric values (e.g., \code{500}, \code{c(610,620,630)}), and/or
 #' - range strings in interval notation with inclusive/exclusive bounds:
-#'   `"[400,600]"`, `"(400,600)"`, `"[400,600)"`, `"(400,600]"`.
-#'   Example: `c("[600,700)", "500")`. If `values_as_one` is `NULL`, **non-NA**
+#'   \code{"[400,600]"}, \code{"(400,600)"}, \code{"[400,600)"}, \code{"(400,600]"}.
+#'   Example: \code{c("[600,700)", "500")}. If `values_as_one` is `NULL`, **non-NA**
 #'   cells are considered sources.
 #'
 #' **Distance engine:** Set `use_whitebox = TRUE` (default) to compute the distance with

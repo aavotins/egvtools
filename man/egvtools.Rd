@@ -24,6 +24,9 @@ existing libs, but opinionated for stability, speed and consistency):
 \item \code{input2egv()} — normalize/align inputs to EGV outputs with guards.
 \item \code{landscape_function()} — \pkg{landscapemetrics} landscape-level per-zone metrics, tiled.
 \item \code{radius_function()} — multi-scale zonal statistics (dense/sparse).
+\item \code{tile_vector_grid()} — tile template grids for chunked processing.
+\item \code{tiled_buffers()} — precompute buffered tiles for multiple radii.
+\item \code{create_backgrounds()} — build consistent background rasters/values.
 }
 }
 
@@ -35,9 +38,6 @@ can be reproduced:
 \item \code{download_raster_templates()} — fetch template rasters (Zenodo) to
 canonical paths.
 \item \code{download_vector_templates()} — fetch template vector grids/points.
-\item \code{tile_vector_grid()} — tile template grids for chunked processing.
-\item \code{tiled_buffers()} — precompute buffered tiles for multiple radii.
-\item \code{create_backgrounds()} — build consistent background rasters/values.
 }
 }
 
