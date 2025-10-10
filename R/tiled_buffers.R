@@ -222,11 +222,6 @@ tiled_buffers <- function(
     }
 
     buf <- sf::st_buffer(pts_t, dist = r)
-    keep <- intersect(c("id","ID","grid_id","cell_id", split_field), names(pts_t))
-    if (length(keep)) {
-      buf <- cbind(pts_t[keep], sf::st_geometry(buf))
-      sf::st_geometry(buf) <- "geometry"
-    }
 
     write_parquet_atomic(buf, out_file)
     data.frame(input = in_file, tileid = tileid, mode = "const",
@@ -255,11 +250,6 @@ tiled_buffers <- function(
     }
 
     buf <- sf::st_buffer(pts_t, dist = dists)
-    keep <- intersect(c("id","ID","grid_id","cell_id", split_field, field), names(pts_t))
-    if (length(keep)) {
-      buf <- cbind(pts_t[keep], sf::st_geometry(buf))
-      sf::st_geometry(buf) <- "geometry"
-    }
 
     write_parquet_atomic(buf, out_file)
     data.frame(input = in_file, tileid = tileid, mode = "field",
