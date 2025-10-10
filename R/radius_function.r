@@ -225,8 +225,8 @@ radius_function <- function(
   kv_rad <- tidyr::pivot_wider(
     kv_rad,
     id_cols   = .data$lapa,
-    names_from  = .data$veids,
-    values_from = c(.data$fails_r, .data$cels_radiuss),
+    names_from  = veids,
+    values_from = c(fails_r, cels_radiuss),
     names_glue  = "{.value}_{veids}"
   ) |>
     dplyr::rename_with(~ gsub("fails_r_", "fails_", .x), dplyr::starts_with("fails_r_")) |>
@@ -385,6 +385,9 @@ radius_function <- function(
     for (rad in radii) {
       vec <- r_polys[[rad]]
       if (is.null(vec)) next
+
+      vec <- vec[!sf::st_is_empty(vec), , drop = FALSE]
+      if (nrow(vec) == 0) next
 
       res <- suppressWarnings(
         exactextractr::exact_extract(stack_crop, vec, fun = extract_fun)
