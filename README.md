@@ -27,6 +27,42 @@ Five of the functions are strictly for replication, while others are
 useful for wider audience (see documentation and
 [articles](https://aavotins.github.io/egvtools/)).
 
+Athough all georeferenced data can be considered geodata, in this
+material we use the following terms in the order listed below in our
+workflows:
+
+- **raw geodata** - considered as raw data obtained for a harmonised
+  description of the environment. This may include tables with
+  coordinates, raster or vector data. It can be anything that has been
+  or can be used to create ecogeographical variables, with or without
+  slight processing.
+
+- **geodata product** - processed raw geodata that have undegone heavy
+  modifications, e.g. spatial overlays and combinations of different
+  sets of raw geodata, and are used as input data. In this document,
+  geodata products are categorical raster layers that match the CRS and
+  the pixel locations of input data. When split by categories, they
+  become input data. The processing step of creating geodata products is
+  necessary when decisions about the order of spatial overlays are
+  important. For example, in a high-resolution pixel, there can only be
+  water or forest, if the edge between water and forest need to be
+  calculated.
+
+- **input data** or **input layers** - very-high resolution (multiple
+  times higher than that used for ecogeographical variables) raster data
+  that are the direct input for the creation of most of the
+  ecogeographical variables. The creation of such layers is particularly
+  useful alongside geodata products, as dealing with border misalignment
+  or decisions regarding the order of spatial o verlays, as well as
+  simple geoprocessing, is much faster with raster data.
+
+- **ecogeographical variables (EGVs)** - this is the final product of
+  the workflow describing environment for statistical analysis
+  (e.g. species distribution modelling). They are suitable also for
+  publishing due to standadisation of the values. In other words, these
+  are standardised landscape ecological variables in the form of
+  high-resolution raster layers.
+
 ## Installation
 
 You can install the development version of egvtools from
@@ -39,7 +75,8 @@ pak::pak("aavotins/egvtools")
 
 ## Usage
 
-Functions in this package can be devided in two parts:
+Functions in this package can be devided in two parts with extra
+intermediate wrapper:
 
 1)  helper functions to prepare analysis templates for reproduction:
 
@@ -50,10 +87,12 @@ Functions in this package can be devided in two parts:
   (from Zenodo repository);
 
 - `tile_vector_grid()` — tile template (vector) grid for chunked
-  processing, easily generalised to other datasets;
+  processing;
 
-- `tiled_buffers()` — precompute buffered tiles for multiple radii, easily 
-generalised to other datasets;
+- `tiled_buffers()` — precompute buffered tiles for multiple radii;
+
+- `radius_function()` — multi-scale zonal statistics (dense/sparse).
+  Currently hard coded to our filenames;
 
 2)  intermediate wrapper around `terra::ifel()`:
 
@@ -62,7 +101,7 @@ generalised to other datasets;
   matching, etc.;
 
 3)  core analysis functions - small workflows, that are easily
-    generalizable to other areas or use cases. Every function guards
+    generalizable to other areas or usecases. Every function guards
     spatial cover, resolution, coordinate reference system, exact pixel
     matching, etc.:
 
@@ -78,45 +117,16 @@ generalised to other datasets;
 - `distance2egv()` — distances to features in inputs, summarised to EGV
   resolution with optional gap filling at the edges;
 
-- `landscape_function()` — landscape-level per-zone metrics, tiled;
+- `landscape_function()` — landscape-level per-zone metrics, tiled.
 
-- `radius_function()` — multi-scale zonal statistics (dense/sparse).
-
-In this package we use various raw geodata. Vector data need to be
+In this package we use various geodata. Vector data need to be
 polygonised before `polygon2input()`. Multiple outputs of this function
 can be combined before creating EGVs.
 
-Athough all georeferenced data can be considered geodata, in this material we 
-use the following terms in the order listed below in our workflows:
-
-- **raw geodata** - considered as raw data obtained for a harmonised description 
-of the environment. This may include tables with coordinates, raster or vector 
-data. It can be anything that has been or can be used to create ecogeographical 
-variables, with or without slight processing.
-
-- **geodata product** - processed raw geodata that have undegone heavy 
-modifications, e.g.  spatial overlays and combinations of different sets of 
-raw geodata, and are used as input data. In this document, geodata products are 
-categorical raster layers that match the CRS and the pixel locations of input data. 
-When split by categories, they become input data. The processing step of creating 
-geodata products is necessary when decisions about the order of spatial overlays 
-are important. For example, in a high-resolution pixel, there can only be water 
-or forest, if the edge between water and forest need to be calculated.
-
-- **input data** or **input layers** - very-high resolution (multiple times 
-higher than that used for ecogeographical variables) raster data that are the 
-direct input for the creation of most of the ecogeographical variables. The 
-creation of such layers is particularly useful alongside geodata products, as 
-dealing with border misalignment or decisions regarding the order of spatial o
-verlays, as well as simple geoprocessing, is much faster with raster data.
-
-- **ecogeographical variables (EGVs)** - this is the final product of the 
-workflow describing environment for statistical analysis (e.g. species 
-distribution modelling). They are suitable also for publishing due to 
-standadisation of the values. In other words, these are standardised landscape 
-ecological variables in the form of high-resolution raster 
-layers. 
-
+We use term *input* for raster layers of higher resolution (exact
+multiple) than EGV used for species distribution analysis. These layers
+are for geodata harmonisation and standartisation in a *much* faster and
+memory-friendly approach.
 
 Every other function ending with `*egv()` and `landscape_*()` and
 `radius_*()` functions create standartised and harmonised EGVs.
@@ -124,7 +134,8 @@ Every other function ending with `*egv()` and `landscape_*()` and
 Functions ending with `*egv()` and `landscape_*()` function operate at
 EGV cell resolution. While `radius_function()` creates output matching
 EGV template with cell values representing aggregated information from
-larger scales (at specified radius around every EGV-cells center)
+larger scales (at specified radius around every EGV-cells center with
+mode=“dense” or spatially sparse aggregation with mode=“sparse”).
 
 ## Code of Conduct
 
