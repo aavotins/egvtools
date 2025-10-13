@@ -51,6 +51,13 @@
 
 <p><code>egvtools</code> provides a coherent set of wrappers and utilities that make large-scale <strong>EGV</strong> creation reproducible and pleasant on real datasets. The package leans on robust building blocks—<code>terra</code>, <code>sf</code>, <code>sfarrow</code>, <code>exactextractr</code>, and <code>whitebox</code>—and standardizes I/O, naming conventions, and multi-scale zonal statistics so your pipelines are repeatable across machines and projects.</p>
 <p>The package was developed to simply our work in project “HiQBioDiv: High-resolution quantification of biodiversity for conservation and management” funded by the Latvian Council of Science (Ref. No. VPP-VARAM-DABA-2024/1-0002) and to ease reproduction of our work. Five of the functions are strictly for replication, while others are useful for wider audience (see documentation and <a href="https://aavotins.github.io/egvtools/">articles</a>).</p>
+<p>Athough all georeferenced data can be considered geodata, in this material we use the following terms in the order listed below in our workflows:</p>
+<ul>
+<li><p><strong>raw geodata</strong> - considered as raw data obtained for a harmonised description of the environment. This may include tables with coordinates, raster or vector data. It can be anything that has been or can be used to create ecogeographical variables, with or without slight processing.</p></li>
+<li><p><strong>geodata product</strong> - processed raw geodata that have undegone heavy modifications, e.g. spatial overlays and combinations of different sets of raw geodata, and are used as input data. In this document, geodata products are categorical raster layers that match the CRS and the pixel locations of input data. When split by categories, they become input data. The processing step of creating geodata products is necessary when decisions about the order of spatial overlays are important. For example, in a high-resolution pixel, there can only be water or forest, if the edge between water and forest need to be calculated.</p></li>
+<li><p><strong>input data</strong> or <strong>input layers</strong> - very-high resolution (multiple times higher than that used for ecogeographical variables) raster data that are the direct input for the creation of most of the ecogeographical variables. The creation of such layers is particularly useful alongside geodata products, as dealing with border misalignment or decisions regarding the order of spatial o verlays, as well as simple geoprocessing, is much faster with raster data.</p></li>
+<li><p><strong>ecogeographical variables (EGVs)</strong> - this is the final product of the workflow describing environment for statistical analysis (e.g. species distribution modelling). They are suitable also for publishing due to standadisation of the values. In other words, these are standardised landscape ecological variables in the form of high-resolution raster layers.</p></li>
+</ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -62,15 +69,16 @@
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<p>Functions in this package can be devided in two parts:</p>
+<p>Functions in this package can be devided in two parts with extra intermediate wrapper:</p>
 <ol style="list-style-type: decimal">
 <li>helper functions to prepare analysis templates for reproduction:</li>
 </ol>
 <ul>
 <li><p><code><a href="reference/download_raster_templates.html">download_raster_templates()</a></code> — fetch template rasters (from Zenodo repository);</p></li>
 <li><p><code><a href="reference/download_vector_templates.html">download_vector_templates()</a></code> — fetch template vector grids/points (from Zenodo repository);</p></li>
-<li><p><code><a href="reference/tile_vector_grid.html">tile_vector_grid()</a></code> — tile template (vector) grid for chunked processing, easily generalised to other datasets;</p></li>
-<li><p><code><a href="reference/tiled_buffers.html">tiled_buffers()</a></code> — precompute buffered tiles for multiple radii, easily generalised to other datasets;</p></li>
+<li><p><code><a href="reference/tile_vector_grid.html">tile_vector_grid()</a></code> — tile template (vector) grid for chunked processing;</p></li>
+<li><p><code><a href="reference/tiled_buffers.html">tiled_buffers()</a></code> — precompute buffered tiles for multiple radii;</p></li>
+<li><p><code><a href="reference/radius_function.html">radius_function()</a></code> — multi-scale zonal statistics (dense/sparse). Currently hard coded to our filenames;</p></li>
 </ul>
 <ol start="2" style="list-style-type: decimal">
 <li>intermediate wrapper around <code><a href="https://rspatial.github.io/terra/reference/ifelse.html" class="external-link">terra::ifel()</a></code>:</li>
@@ -80,26 +88,19 @@
 <code><a href="reference/create_backgrounds.html">create_backgrounds()</a></code> — build consistent background rasters, guarding spatial cover, resolution, coordinate reference system, exact pixel matching, etc.;</li>
 </ul>
 <ol start="3" style="list-style-type: decimal">
-<li>core analysis functions - small workflows, that are easily generalizable to other areas or use cases. Every function guards spatial cover, resolution, coordinate reference system, exact pixel matching, etc.:</li>
+<li>core analysis functions - small workflows, that are easily generalizable to other areas or usecases. Every function guards spatial cover, resolution, coordinate reference system, exact pixel matching, etc.:</li>
 </ol>
 <ul>
 <li><p><code><a href="reference/polygon2input.html">polygon2input()</a></code> — rasterize polygons to ultra-high-resolution template, handle background/mask;</p></li>
 <li><p><code><a href="reference/input2egv.html">input2egv()</a></code> — normalize/align ultra-high-resolution inputs to broader-resolution EGV output rasters with guards to template;</p></li>
 <li><p><code><a href="reference/downscale2egv.html">downscale2egv()</a></code> — downscale coarse rasters to template grid and optionally smooth with IDW;</p></li>
 <li><p><code><a href="reference/distance2egv.html">distance2egv()</a></code> — distances to features in inputs, summarised to EGV resolution with optional gap filling at the edges;</p></li>
-<li><p><code><a href="reference/landscape_function.html">landscape_function()</a></code> — landscape-level per-zone metrics, tiled;</p></li>
-<li><p><code><a href="reference/radius_function.html">radius_function()</a></code> — multi-scale zonal statistics (dense/sparse).</p></li>
+<li><p><code><a href="reference/landscape_function.html">landscape_function()</a></code> — landscape-level per-zone metrics, tiled.</p></li>
 </ul>
-<p>In this package we use various raw geodata. Vector data need to be polygonised before <code><a href="reference/polygon2input.html">polygon2input()</a></code>. Multiple outputs of this function can be combined before creating EGVs.</p>
-<p>Athough all georeferenced data can be considered geodata, in this material we use the following terms in the order listed below in our workflows:</p>
-<ul>
-<li><p><strong>raw geodata</strong> - considered as raw data obtained for a harmonised description of the environment. This may include tables with coordinates, raster or vector data. It can be anything that has been or can be used to create ecogeographical variables, with or without slight processing.</p></li>
-<li><p><strong>geodata product</strong> - processed raw geodata that have undegone heavy modifications, e.g. spatial overlays and combinations of different sets of raw geodata, and are used as input data. In this document, geodata products are categorical raster layers that match the CRS and the pixel locations of input data. When split by categories, they become input data. The processing step of creating geodata products is necessary when decisions about the order of spatial overlays are important. For example, in a high-resolution pixel, there can only be water or forest, if the edge between water and forest need to be calculated.</p></li>
-<li><p><strong>input data</strong> or <strong>input layers</strong> - very-high resolution (multiple times higher than that used for ecogeographical variables) raster data that are the direct input for the creation of most of the ecogeographical variables. The creation of such layers is particularly useful alongside geodata products, as dealing with border misalignment or decisions regarding the order of spatial o verlays, as well as simple geoprocessing, is much faster with raster data.</p></li>
-<li><p><strong>ecogeographical variables (EGVs)</strong> - this is the final product of the workflow describing environment for statistical analysis (e.g. species distribution modelling). They are suitable also for publishing due to standadisation of the values. In other words, these are standardised landscape ecological variables in the form of high-resolution raster layers.</p></li>
-</ul>
+<p>In this package we use various geodata. Vector data need to be polygonised before <code><a href="reference/polygon2input.html">polygon2input()</a></code>. Multiple outputs of this function can be combined before creating EGVs.</p>
+<p>We use term <em>input</em> for raster layers of higher resolution (exact multiple) than EGV used for species distribution analysis. These layers are for geodata harmonisation and standartisation in a <em>much</em> faster and memory-friendly approach.</p>
 <p>Every other function ending with <code>*egv()</code> and <code>landscape_*()</code> and <code>radius_*()</code> functions create standartised and harmonised EGVs.</p>
-<p>Functions ending with <code>*egv()</code> and <code>landscape_*()</code> function operate at EGV cell resolution. While <code><a href="reference/radius_function.html">radius_function()</a></code> creates output matching EGV template with cell values representing aggregated information from larger scales (at specified radius around every EGV-cells center)</p>
+<p>Functions ending with <code>*egv()</code> and <code>landscape_*()</code> function operate at EGV cell resolution. While <code><a href="reference/radius_function.html">radius_function()</a></code> creates output matching EGV template with cell values representing aggregated information from larger scales (at specified radius around every EGV-cells center with mode=“dense” or spatially sparse aggregation with mode=“sparse”).</p>
 </div>
 <div class="section level2">
 <h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
