@@ -18,7 +18,6 @@ landscape_function(
   buffer_m = 1000,
   rasterize_engine = c("fasterize", "terra"),
   n_workers = 1,
-  os_type = "auto",
   future_max_size = 4 * 1024^3,
   gdal_opts = c("COMPRESS=LZW", "TILED=YES", "BIGTIFF=IF_SAFER"),
   write_datatype = NULL,
@@ -65,8 +64,6 @@ landscape_function(
 \item{rasterize_engine}{\code{"fasterize"} (default) or \code{"terra"}.}
 
 \item{n_workers}{Integer; \code{1} = sequential.}
-
-\item{os_type}{\verb{"auto","windows","mac","linux","slurm"} (default \code{"auto"}).}
 
 \item{future_max_size}{Max globals per worker (bytes); default \code{4 * 1024^3} (~4 GiB).}
 

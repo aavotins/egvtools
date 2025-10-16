@@ -53,7 +53,6 @@
 #' @param IDW_weight Numeric power for Whitebox IDW. Default `2`.
 #' @param extract_fun Function or single string (e.g., `"mean"`) passed to `exactextractr::exact_extract()`
 #'   that returns **one scalar per polygon**. If it returns multiple values per polygon, the function stops.
-#' @param os_type `"auto"`, `"windows"`, `"mac"`, `"linux"`, or `"slurm"`. Parallel backend selector.
 #' @param future_max_size Max globals per worker (bytes). Default `8 * 1024^3`.
 #' @param gdal_opts GDAL creation options for writes. Default
 #'   `c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")`.
@@ -98,7 +97,7 @@
 #' @importFrom tibble tibble
 #' @importFrom tidyr separate pivot_wider
 #' @importFrom furrr future_map2 furrr_options
-#' @importFrom future plan sequential multicore multisession cluster
+#' @importFrom future plan sequential multisession
 #' @importFrom sfarrow st_read_parquet
 #' @importFrom exactextractr exact_extract
 #' @importFrom whitebox wbt_fill_missing_data
@@ -120,7 +119,6 @@ radius_function <- function(
     radius_mode = "sparse",
     IDW_weight = 2,
     extract_fun = "mean",
-    os_type = "auto",
     future_max_size = 8 * 1024^3,
     gdal_opts = c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER",
                   "NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256"),
@@ -139,6 +137,10 @@ radius_function <- function(
     while (sink.number() > orig_out) sink()
   }, add = TRUE)
   say <- function(...) if (!quiet) cat(..., "\n")
+
+
+  # ---- HPC/container safety ----
+  options(future.fork.enable = FALSE)  # never fork
 
   # ---- deps ----
   .need_pkg <- function(p, why) {
@@ -174,7 +176,6 @@ radius_function <- function(
     if (!is.na(terra_todisk)) terra::terraOptions(todisk = isTRUE(terra_todisk))
   })
 
-  options(future.globals.maxSize = future_max_size)
 
   # ---- basic checks ----
   if (!fs::dir_exists(output_dir)) fs::dir_create(output_dir, recurse = TRUE)
@@ -182,26 +183,42 @@ radius_function <- function(
   names(input_layers) <- layer_prefixes
   if (length(extract_fun) != 1) stop("`extract_fun` must be a single function or string (e.g., \"mean\").")
 
-  # ---- parallel plan ----
-  on_slurm <- function() any(nzchar(Sys.getenv(c("SLURM_JOB_ID","SLURM_CPUS_ON_NODE","SLURM_JOB_NODELIST"))))
-  safe_plan <- function(n_workers = 1, os_type = "auto") {
-    if (n_workers == 1) { future::plan(future::sequential); say("Using sequential plan."); return(invisible()) }
-    osd <- if (identical(tolower(os_type), "auto")) { if (on_slurm()) "slurm" else tolower(Sys.info()[["sysname"]]) } else tolower(os_type)
-    if (osd == "slurm") {
-      cl <- parallel::makeCluster(n_workers); future::plan(future::cluster, workers = cl)
-      on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE); say("Using SLURM-aware cluster backend."); return(invisible())
-    }
-    if (osd %in% c("windows","mac","darwin")) { future::plan(future::multisession, workers = n_workers); say("Using multisession on ", osd); return(invisible()) }
-    if (osd == "linux") {
-      tryCatch({ future::plan(future::multicore, workers = n_workers); say("Using multicore on Linux.") },
-               error = function(e) { future::plan(future::multisession, workers = n_workers); say("Multicore failed. Using multisession fallback.") })
-      return(invisible())
-    }
-    stop("Unknown os_type: ", osd)
-  }
+  # ---- parallel plan (auto; PSOCK on HPC, multisession elsewhere) ----
+  # Cap workers to SLURM allocation
+  slurm_ct <- suppressWarnings(as.integer(Sys.getenv("SLURM_CPUS_PER_TASK")))
+  slurm_on <- suppressWarnings(as.integer(Sys.getenv("SLURM_CPUS_ON_NODE")))
+  cap <- max(c(slurm_ct, slurm_on), na.rm = TRUE)
+  if (is.finite(cap) && cap > 0L) n_workers <- min(n_workers, cap)
+
   old_plan <- future::plan()
   on.exit(try(future::plan(old_plan), silent = TRUE), add = TRUE)
-  safe_plan(n_workers = n_workers, os_type = os_type)
+
+  old_max <- getOption("future.globals.maxSize")
+  options(future.globals.maxSize = future_max_size)
+  on.exit(options(future.globals.maxSize = old_max), add = TRUE)
+
+  is_hpc <- function() {
+    any(nzchar(Sys.getenv(c(
+      "SLURM_JOB_ID","PBS_JOBID","LSB_JOBID","APPTAINER_NAME","SINGULARITY_NAME"
+    ))))
+  }
+
+  show_progress <- (!quiet) && !is_hpc()
+
+  scratch <- Sys.getenv("SLURM_TMPDIR", unset = tempdir())
+  Sys.setenv(
+    OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1",
+    VECLIB_MAXIMUM_THREADS="1", BLIS_NUM_THREADS="1", GOTO_NUM_THREADS="1",
+    RCPP_PARALLEL_NUM_THREADS="1", GDAL_NUM_THREADS="1",
+    MALLOC_ARENA_MAX="2", GDAL_CACHEMAX="256", CPL_VSIL_CURL_CACHE_SIZE="0",
+    TMPDIR=scratch, TEMP=scratch, R_TEMPORARY_DIR=scratch,CPL_TMPDIR = scratch
+  )
+
+  if (n_workers <= 1L) {
+    future::plan(future::sequential)
+  } else {
+    future::plan(future::multisession, workers = n_workers)
+  }
 
   # ---- list tiles & radii files ----
   kvadratiem <- tibble::tibble(fails_c = list.files(kvadrati_path, full.names = TRUE)) |>
@@ -209,7 +226,7 @@ radius_function <- function(
 
   kv_rad <- tibble::tibble(fails_r = list.files(radii_path, full.names = TRUE)) |>
     dplyr::mutate(cels_radiuss = .data$fails_r, filename = basename(.data$fails_r)) |>
-    tidyr::separate(.data$filename, into = c("sakums","veids","lapa","beigas"), remove = FALSE)
+    tidyr::separate(.data$filename, into = c("sakums","veids","lapa","beigas"),remove = FALSE)
 
   if (identical(radius_mode, "sparse")) {
     kv_rad <- dplyr::filter(
@@ -224,7 +241,7 @@ radius_function <- function(
 
   kv_rad <- tidyr::pivot_wider(
     kv_rad,
-    id_cols   = .data$lapa,
+    id_cols   = lapa,
     names_from  = veids,
     values_from = c(fails_r, cels_radiuss),
     names_glue  = "{.value}_{veids}"
@@ -238,9 +255,13 @@ radius_function <- function(
   # ---- template (final alignment) ----
   template_r_full <- terra::rast(template_path)
 
-  # ---- GDAL options ----
-  tuned_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
-  gdal_opts <- unique(c(gdal_opts, tuned_defaults))
+  # ---- GDAL options (avoid oversubscription when parallel) ----
+  tuned_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","BLOCKXSIZE=256","BLOCKYSIZE=256")
+  tuned_defaults <- c(tuned_defaults, if (n_workers > 1L) "NUM_THREADS=1" else "NUM_THREADS=ALL_CPUS")
+
+  # ensure only one NUM_THREADS setting
+  gdal_opts <- c(setdiff(gdal_opts, gdal_opts[grepl("^NUM_THREADS=", gdal_opts)]), tuned_defaults)
+  gdal_opts <- unique(gdal_opts)
 
   # ---- atomic write helper ----
   .write_r <- function(r, path, gdal_opts, write_datatype, NAflag) {
@@ -432,6 +453,25 @@ radius_function <- function(
   }
 
   # ---- run tiles in parallel ----
+  opts <- furrr::furrr_options(
+    seed    = TRUE,
+    globals = c(
+      "process_tile",
+      ".get_cached",
+      ".parse_extract",
+      ".write_r",
+      "say",
+      ".egvtools_cache",
+      ".egv_cache_get",
+      ".egv_cache_set",
+      ".egv_cache_drop",
+      ".egv_cache_clear"
+    ),
+    packages = c("terra","sf","sfarrow","fasterize","exactextractr",
+                 "dplyr","tibble","tidyr","glue","raster")
+  )
+
+
   furrr::future_map2(
     .x = names(kvadrati_list),
     .y = kvadrati_list,
@@ -441,8 +481,8 @@ radius_function <- function(
                                      output_dir, radii, extract_fun,
                                      gdal_opts, write_datatype, NAflag,
                                      terra_tempdir),
-    .progress = TRUE,
-    .options = furrr::furrr_options(seed = TRUE, globals = FALSE)
+    .progress = show_progress,
+    .options = opts
   )
 
   # ---- merge tiles then project/mask then gap analysis then optional fill then write ----

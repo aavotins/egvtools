@@ -13,9 +13,9 @@
 #' - **"dense"**: Buffers the best-matching `pts100*.parquet` (prefers `pts100_sauzeme.parquet`)
 #'   for each tile by `radii_dense` (default: 500, 1250, 3000, 10000 m).
 #' - **"sparse"**: Uses a file to radius mapping. Default mapping:
-#'     * `pts100_sauzeme.parquet` to c(500, 1250)
-#'     * `pts300_sauzeme.parquet` to 3000
-#'     * `pts1000_sauzeme.parquet` to 10000
+#'     * "pts100_sauzeme.parquet" to c(500, 1250)
+#'     * "pts300_sauzeme.parquet" to 3000
+#'     * "pts1000_sauzeme.parquet" to 10000
 #'   You can override this via `mapping_sparse` (named list or data.frame with columns `file`, `radius`).
 #' - **"specified"**: You provide `points_path` and either
 #'   `buffer_radius` (uniform, one or more fixed radii) **or** `radius_field`
@@ -42,8 +42,6 @@
 #'   per-feature radii (meters) for "specified". If given, `buffer_radius` is ignored.
 #' @param split_field Character. Field in the point data that defines tiles. Default "tks50km".
 #' @param n_workers Integer. Parallel workers. Default `max(1L, parallel::detectCores())`.
-#' @param os_type Optional character to force backend plan:
-#'   "windows", "mac", "darwin", "linux", "slurm". Default NULL becomes auto-detect.
 #' @param future_max_mem_gb Numeric. Max size of exported globals per worker (GiB).
 #'   Sets `options(future.globals.maxSize = future_max_mem_gb * 1024^3)`. Default 4.
 #' @param overwrite Logical. Overwrite existing outputs? Default FALSE.
@@ -73,7 +71,7 @@
 #' @importFrom sfarrow st_read_parquet st_write_parquet
 #' @importFrom sf st_buffer st_is_empty st_make_valid st_geometry st_geometry<- sf_use_s2
 #' @importFrom furrr future_map
-#' @importFrom future plan multisession multicore cluster sequential
+#' @importFrom future plan multisession sequential
 #' @export
 tiled_buffers <- function(
     in_dir         = "./Templates/TemplateGridPoints",
@@ -90,7 +88,6 @@ tiled_buffers <- function(
     radius_field   = NULL,
     split_field    = "tks50km",
     n_workers      = max(1L, parallel::detectCores()),
-    os_type        = NULL,
     future_max_mem_gb = 4,
     overwrite      = FALSE,
     quiet          = FALSE
@@ -110,6 +107,8 @@ tiled_buffers <- function(
 
   if (!fs::dir_exists(out_dir)) fs::dir_create(out_dir, recurse = TRUE)
 
+
+
   # ---- sink safety: snapshot & restore on exit (protects against stuck sinks) ----
   orig_out <- sink.number()
   orig_msg <- sink.number(type = "message")
@@ -122,6 +121,15 @@ tiled_buffers <- function(
 
 
 
+  # Treat SLURM/containers as HPC; avoid fork
+  is_hpc <- nzchar(Sys.getenv("SLURM_JOB_ID")) ||
+    nzchar(Sys.getenv("PBS_JOBID"))     ||
+    nzchar(Sys.getenv("LSB_JOBID"))     ||
+    nzchar(Sys.getenv("APPTAINER_NAME"))||
+    nzchar(Sys.getenv("SINGULARITY_NAME"))
+
+  options(future.fork.enable = FALSE)
+
   # ---- preserve caller's plan and options; restore on exit ----
   old_plan <- future::plan()
   on.exit(future::plan(old_plan), add = TRUE)
@@ -129,35 +137,20 @@ tiled_buffers <- function(
   on.exit(options(old_opts), add = TRUE)
 
   # ---- choose parallel backend ----
-  plan_auto <- function(os_detected) {
-    if (!is.null(os_detected) && os_detected == "slurm") {
-      cl <- tryCatch(parallel::makeCluster(n_workers), error = function(e) NULL)
-      if (!is.null(cl)) {
-        future::plan(future::cluster, workers = cl)
-        on.exit(try(parallel::stopCluster(cl), silent = TRUE), add = TRUE, after = TRUE)
-        if (!quiet) say("Using SLURM cluster backend (", n_workers, " workers).")
-        return(invisible())
-      }
-    }
-    sys <- tolower(Sys.info()[["sysname"]])
-    if (!is.null(os_detected)) sys <- os_detected
-    if (sys %in% c("windows","mac","darwin")) {
-      future::plan(future::multisession, workers = n_workers)
-      if (!quiet) say("Using multisession (", n_workers, " workers).")
-    } else if (sys == "linux") {
-      future::plan(future::multicore, workers = n_workers)
-      if (!quiet) say("Using multicore on Linux (", n_workers, " workers).")
-    } else {
-      future::plan(future::sequential)
-      if (!quiet) say("Falling back to sequential.")
-    }
+  scratch <- Sys.getenv("SLURM_TMPDIR", unset = tempdir())
+  Sys.setenv(
+    OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1",
+    VECLIB_MAXIMUM_THREADS="1", BLIS_NUM_THREADS="1", GOTO_NUM_THREADS="1",
+    RCPP_PARALLEL_NUM_THREADS="1", GDAL_NUM_THREADS="1",
+    MALLOC_ARENA_MAX="2", GDAL_CACHEMAX="256", CPL_VSIL_CURL_CACHE_SIZE="0",
+    TMPDIR=scratch, TEMP=scratch, R_TEMPORARY_DIR=scratch
+  )
+
+  if (n_workers <= 1L) {
+    future::plan(future::sequential)
+  } else {
+    future::plan(future::multisession, workers = n_workers)
   }
-  detect_os <- function() {
-    if (!is.null(os_type)) return(tolower(os_type))
-    if (nzchar(Sys.getenv("SLURM_JOB_ID"))) return("slurm")
-    tolower(Sys.info()[["sysname"]])
-  }
-  plan_auto(detect_os())
 
   # ---- helpers (exported to workers via globals=TRUE) ----
   get_base <- function(fname) {

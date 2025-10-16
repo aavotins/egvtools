@@ -19,7 +19,6 @@ radius_function(
   radius_mode = "sparse",
   IDW_weight = 2,
   extract_fun = "mean",
-  os_type = "auto",
   future_max_size = 8 * 1024^3,
   gdal_opts = c("COMPRESS=LZW", "TILED=YES", "BIGTIFF=IF_SAFER", "NUM_THREADS=ALL_CPUS",
     "BLOCKXSIZE=256", "BLOCKYSIZE=256"),
@@ -64,8 +63,6 @@ output layer prefixes.}
 
 \item{extract_fun}{Function or single string (e.g., \code{"mean"}) passed to \code{exactextractr::exact_extract()}
 that returns \strong{one scalar per polygon}. If it returns multiple values per polygon, the function stops.}
-
-\item{os_type}{\code{"auto"}, \code{"windows"}, \code{"mac"}, \code{"linux"}, or \code{"slurm"}. Parallel backend selector.}
 
 \item{future_max_size}{Max globals per worker (bytes). Default \code{8 * 1024^3}.}
 

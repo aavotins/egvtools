@@ -19,7 +19,6 @@ tiled_buffers(
   radius_field = NULL,
   split_field = "tks50km",
   n_workers = max(1L, parallel::detectCores()),
-  os_type = NULL,
   future_max_mem_gb = 4,
   overwrite = FALSE,
   quiet = FALSE
@@ -55,9 +54,6 @@ per-feature radii (meters) for "specified". If given, \code{buffer_radius} is ig
 
 \item{n_workers}{Integer. Parallel workers. Default \code{max(1L, parallel::detectCores())}.}
 
-\item{os_type}{Optional character to force backend plan:
-"windows", "mac", "darwin", "linux", "slurm". Default NULL becomes auto-detect.}
-
 \item{future_max_mem_gb}{Numeric. Max size of exported globals per worker (GiB).
 Sets \code{options(future.globals.maxSize = future_max_mem_gb * 1024^3)}. Default 4.}
 
@@ -89,9 +85,9 @@ The \code{buffer_mode} determines how radii are assigned:
 for each tile by \code{radii_dense} (default: 500, 1250, 3000, 10000 m).
 \item \strong{"sparse"}: Uses a file to radius mapping. Default mapping:
 \itemize{
-\item \code{pts100_sauzeme.parquet} to c(500, 1250)
-\item \code{pts300_sauzeme.parquet} to 3000
-\item \code{pts1000_sauzeme.parquet} to 10000
+\item "pts100_sauzeme.parquet" to c(500, 1250)
+\item "pts300_sauzeme.parquet" to 3000
+\item "pts1000_sauzeme.parquet" to 10000
 You can override this via \code{mapping_sparse} (named list or data.frame with columns \code{file}, \code{radius}).
 }
 \item \strong{"specified"}: You provide \code{points_path} and either

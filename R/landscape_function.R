@@ -43,7 +43,6 @@
 #' @param buffer_m Numeric buffer (m) for tile bbox before crop (default `1000`).
 #' @param rasterize_engine `"fasterize"` (default) or `"terra"`.
 #' @param n_workers Integer; `1` = sequential.
-#' @param os_type `"auto","windows","mac","linux","slurm"` (default `"auto"`).
 #' @param future_max_size Max globals per worker (bytes); default `4 * 1024^3` (~4 GiB).
 #' @param gdal_opts GDAL creation options (merged with tuned defaults:
 #'   `c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")`).
@@ -127,7 +126,7 @@
 #' @importFrom fs path
 #' @importFrom tools file_ext
 #' @importFrom utils capture.output modifyList
-#' @importFrom future plan sequential multisession multicore cluster
+#' @importFrom future plan sequential multisession
 #' @importFrom furrr furrr_options future_imap
 #' @importFrom raster stack projection raster ncell
 #' @importFrom whitebox wbt_fill_missing_data
@@ -151,7 +150,6 @@ landscape_function <- function(
     buffer_m = 1000,
     rasterize_engine = c("fasterize","terra"),
     n_workers = 1,
-    os_type = "auto",
     future_max_size = 4 * 1024^3,
     gdal_opts = c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER"),
     write_datatype = NULL,
@@ -229,16 +227,8 @@ landscape_function <- function(
     stringr::str_replace_all("[^A-Za-z0-9._-]+", "_") |>
     stringr::str_replace("^_+", "") |>
     stringr::str_replace("_+$", "")
-  on_slurm <- function() any(nzchar(Sys.getenv(c("SLURM_JOB_ID","SLURM_CPUS_ON_NODE","SLURM_JOB_NODELIST"))))
-  safe_plan <- function(n_workers=1, os_type="auto"){
-    if (n_workers==1) return(future::plan(future::sequential))
-    osd <- if (identical(tolower(os_type),"auto")) { if (on_slurm()) "slurm" else tolower(Sys.info()[["sysname"]]) } else tolower(os_type)
-    if (osd=="slurm") { requireNamespace("parallel", quietly=TRUE); cl <- parallel::makeCluster(n_workers); return(future::plan(future::cluster, workers=cl)) }
-    if (osd %in% c("windows","mac","darwin")) return(future::plan(future::multisession, workers=n_workers))
-    if (osd=="linux") { tryCatch(future::plan(future::multicore, workers=n_workers),
-                                 error=function(e) future::plan(future::multisession, workers=n_workers)); return(invisible()) }
-    stop("Unknown os_type: ", osd)
-  }
+
+
   ensure_raster_path <- function(r, tmp_dir, label){
     if (inherits(r,"SpatRaster")){
       src <- try(terra::sources(r), silent=TRUE)
@@ -280,16 +270,6 @@ landscape_function <- function(
   tile_root <- file.path(out_dir, paste0("tiles_", format(Sys.time(), "%Y%m%d_%H%M%S")))
   dir.create(tile_root, recursive = TRUE, showWarnings = FALSE)
 
-  old_plan <- future::plan()
-  old_max  <- getOption("future.globals.maxSize")
-  options(future.globals.maxSize = future_max_size)
-  on.exit({
-    options(future.globals.maxSize = old_max)
-    try(future::plan(old_plan), silent = TRUE)
-    if (!keep_tiles) try(unlink(tile_root, recursive = TRUE, force = TRUE), silent = TRUE)
-  }, add = TRUE)
-  safe_plan(n_workers = n_workers, os_type = os_type)
-
   landscape_path <- ensure_raster_path(r_in, tile_root, "landscape")
   template_path  <- ensure_raster_path(tmpl,  tile_root, "template")
   tiles_sf <- split(z_in, f = z_in[[tile_field]], drop = TRUE)
@@ -303,18 +283,99 @@ landscape_function <- function(
     stringsAsFactors = FALSE
   )
 
-  # core tile worker
-  process_one_tile <- function(tile_sf_in, tile_id){
+  gdal_user <- gdal_opts
+
+  # Per-tile GDAL options (avoid oversubscription)
+  tile_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","BLOCKXSIZE=256","BLOCKYSIZE=256")
+  tile_defaults <- c(tile_defaults, if (n_workers > 1L) "NUM_THREADS=1" else "NUM_THREADS=ALL_CPUS")
+  gdal_tile <- c(setdiff(gdal_user, gdal_user[grepl("^NUM_THREADS=", gdal_user)]), tile_defaults)
+  gdal_tile <- unique(gdal_tile)
+
+  # Final mosaic GDAL options
+  final_defaults <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","BLOCKXSIZE=256","BLOCKYSIZE=256")
+  final_defaults <- c(final_defaults, if (n_workers > 1L) "NUM_THREADS=1" else "NUM_THREADS=ALL_CPUS")
+  gdal_final <- c(setdiff(gdal_user, gdal_user[grepl("^NUM_THREADS=", gdal_user)]), final_defaults)
+  gdal_final <- unique(gdal_final)
+
+  # Datatype & NA for final writes
+  dt_final <- safe_datatype(write_datatype)
+  na_final <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_final) else NAflag
+  if (startsWith(dt_final, "FLT") && !any(grepl("^PREDICTOR=", gdal_final))) {
+    gdal_final <- c(gdal_final, "PREDICTOR=2")
+  }
+
+  # Also compute once for per-tile writes
+  dt_out <- safe_datatype(write_datatype)
+  na_out <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_out) else NAflag
+
+
+  # ---- HPC/container safety ----
+  options(future.fork.enable = FALSE)  # never fork
+
+
+  # ---- parallel plan (auto; multisession on HPC, multisession elsewhere) ----
+  old_plan <- future::plan()
+  old_max  <- getOption("future.globals.maxSize")
+  options(future.globals.maxSize = future_max_size)
+  on.exit({
+    options(future.globals.maxSize = old_max)
+    try(future::plan(old_plan), silent = TRUE)
+    if (!keep_tiles) try(unlink(tile_root, recursive = TRUE, force = TRUE), silent = TRUE)
+  }, add = TRUE)
+
+  scratch <- Sys.getenv("SLURM_TMPDIR", unset = tempdir())
+  Sys.setenv(
+    OMP_NUM_THREADS="1", OPENBLAS_NUM_THREADS="1", MKL_NUM_THREADS="1",
+    VECLIB_MAXIMUM_THREADS="1", BLIS_NUM_THREADS="1", GOTO_NUM_THREADS="1",
+    RCPP_PARALLEL_NUM_THREADS="1", GDAL_NUM_THREADS="1",
+    MALLOC_ARENA_MAX="2", GDAL_CACHEMAX="256", CPL_VSIL_CURL_CACHE_SIZE="0",
+    TMPDIR=scratch, TEMP=scratch, R_TEMPORARY_DIR=scratch,CPL_TMPDIR = scratch
+  )
+
+  is_hpc <- function() {
+    any(nzchar(Sys.getenv(c(
+      "SLURM_JOB_ID","PBS_JOBID","LSB_JOBID","APPTAINER_NAME","SINGULARITY_NAME"
+    ))))
+  }
+
+  show_progress <- (!quiet) && !is_hpc()
+
+  if (n_workers <= 1L) {
+    future::plan(future::sequential)
+  } else {
+    future::plan(future::multisession, workers = n_workers)
+  }
+
+  # --- compute once (used by worker for per-tile writes) ---
+  dt_out <- safe_datatype(write_datatype)
+  na_out <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_out) else NAflag
+
+  # ----- PURE tile worker: no outer references captured -----
+  process_one_tile <- function(tile_sf_in, tile_id,
+                               landscape_path, template_path, tile_root,
+                               gdal_tile, dt_out, na_out,
+                               buffer_m, skip_existing,
+                               out_layername, id_field, what, lm_args,
+                               rasterize_engine, quiet) {
+    # tiny helpers local to the worker (no globals)
+    sanitize_fs <- function(x) {
+      x <- gsub("[^A-Za-z0-9._-]+", "_", x)
+      x <- sub("^_+", "", x); sub("_+$", "", x)
+    }
+    valid_spat <- function(x) inherits(x, "SpatRaster") && !inherits(x, "try-error") &&
+      !is.null(x) && terra::ncell(x) > 0
+
     tryCatch({
       if (inherits(tile_sf_in, "list")) tile_sf_in <- tile_sf_in[[1]]
       if (!inherits(tile_sf_in, "sf"))  tile_sf_in <- sf::st_as_sf(tile_sf_in)
       safe_id  <- sanitize_fs(as.character(tile_id))
       if (!quiet) cat("Tile", safe_id, ": start (n=", nrow(tile_sf_in), ")\n", sep = "")
 
-      lc <- setNames(as.list(rep(0L, nlyr)), paste0("w_", out_layername))
-      se <- setNames(as.list(rep(0L, nlyr)), paste0("se_", out_layername))
-      sc <- setNames(as.list(rep(0L, nlyr)), paste0("scrop_", out_layername))
-      sj <- setNames(as.list(rep(0L, nlyr)), paste0("sjoin_", out_layername))
+      nlyr <- length(out_layername)
+      lc <- stats::setNames(as.list(rep(0L, nlyr)), paste0("w_", out_layername))
+      se <- stats::setNames(as.list(rep(0L, nlyr)), paste0("se_", out_layername))
+      sc <- stats::setNames(as.list(rep(0L, nlyr)), paste0("scrop_", out_layername))
+      sj <- stats::setNames(as.list(rep(0L, nlyr)), paste0("sjoin_", out_layername))
 
       expected_files <- file.path(tile_root, paste0("tile_", safe_id, "_", sanitize_fs(out_layername), ".tif"))
       if (isTRUE(skip_existing) && length(expected_files) > 0 && all(file.exists(expected_files))) {
@@ -363,9 +424,6 @@ landscape_function <- function(
       }
       lsm_tb$value[is.na(lsm_tb$value)] <- 0
       layer_vec <- if ("layer" %in% names(lsm_tb)) sort(unique(lsm_tb$layer)) else 1L
-
-      dt_out <- safe_datatype(write_datatype)
-      na_out <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_out) else NAflag
 
       for (li in layer_vec) {
         sub_tb <- if (length(layer_vec)==1L && !("layer" %in% names(lsm_tb))) lsm_tb else dplyr::filter(lsm_tb, .data$layer==!!li)
@@ -420,26 +478,55 @@ landscape_function <- function(
         rr <- terra::mask(rr, tmpl_crop)
 
         terra::writeRaster(rr, filename = lyr_file, overwrite = TRUE,
-                           gdal = gdal_opts, datatype = dt_out, NAflag = na_out)
+                           gdal = gdal_tile, datatype = dt_out, NAflag = na_out)
         lc[[paste0("w_", lyr_name)]] <- lc[[paste0("w_", lyr_name)]] + 1L
       }
 
       list(lc=lc,se=se,sc=sc,sj=sj)
-
     }, error = function(e){
       if (!quiet) cat("Tile", as.character(tile_id), ": hard error ->", conditionMessage(e), "\n")
+      nlyr <- length(out_layername)
       list(
-        lc = setNames(as.list(rep(0L, nlyr)), paste0("w_", out_layername)),
-        se = setNames(as.list(rep(0L, nlyr)), paste0("se_", out_layername)),
-        sc = setNames(as.list(rep(0L, nlyr)), paste0("scrop_", out_layername)),
-        sj = setNames(as.list(rep(0L, nlyr)), paste0("sjoin_", out_layername))
+        lc = stats::setNames(as.list(rep(0L, nlyr)), paste0("w_", out_layername)),
+        se = stats::setNames(as.list(rep(0L, nlyr)), paste0("se_", out_layername)),
+        sc = stats::setNames(as.list(rep(0L, nlyr)), paste0("scrop_", out_layername)),
+        sj = stats::setNames(as.list(rep(0L, nlyr)), paste0("sjoin_", out_layername))
       )
     })
   }
 
-  furrr_opts <- furrr::furrr_options(seed = TRUE, globals = FALSE)
-  tile_stats <- furrr::future_imap(tiles_sf, ~process_one_tile(.x, .y),
-                                   .options = furrr_opts, .progress = !quiet)
+  # strip environment so it doesn't carry big parents
+  environment(process_one_tile) <- baseenv()
+
+  # ----- FURR call: no globals; pass everything as args; turn off progress on clusters -----
+  tile_stats <- furrr::future_imap(
+    tiles_sf,
+    function(.tile, .id) {
+      process_one_tile(
+        tile_sf_in      = .tile,
+        tile_id         = .id,
+        landscape_path  = landscape_path,
+        template_path   = template_path,
+        tile_root       = tile_root,
+        gdal_tile       = gdal_tile,
+        dt_out          = dt_out,
+        na_out          = na_out,
+        buffer_m        = buffer_m,
+        skip_existing   = skip_existing,
+        out_layername   = out_layername,
+        id_field        = id_field,
+        what            = what,
+        lm_args         = lm_args,
+        rasterize_engine= rasterize_engine,
+        quiet           = quiet
+      )
+    },
+    .options  = furrr::furrr_options(globals = FALSE, seed = TRUE, packages = c(
+      "terra","sf","sp","sfarrow","fasterize","landscapemetrics","raster","dplyr","tibble","stringr"
+    )),
+    .progress = show_progress
+  )
+
 
   # aggregate tile counters
   for (ts in tile_stats) {
@@ -462,11 +549,6 @@ landscape_function <- function(
   fs_used_vec   <- rep(NA_integer_, nlyr)
   gap_filled_vec<- rep(FALSE, nlyr)
 
-  def_opts <- c("COMPRESS=LZW","TILED=YES","BIGTIFF=IF_SAFER","NUM_THREADS=ALL_CPUS","BLOCKXSIZE=256","BLOCKYSIZE=256")
-  gdal_final <- unique(c(gdal_opts, def_opts))
-  dt_final   <- safe_datatype(write_datatype)
-  na_final   <- if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(dt_final) else NAflag
-  if (startsWith(dt_final, "FLT") && !any(grepl("^PREDICTOR=", gdal_final))) gdal_final <- c(gdal_final, "PREDICTOR=2")
 
   for (i in seq_len(nlyr)) {
     lyr_name   <- out_layername[i]
@@ -578,7 +660,7 @@ landscape_function <- function(
           terra::crs(r_aln) <- tmpl_wkt
           gap_filled_vec[i] <- TRUE
         }
-        unlink(c(tmp_in, tmp_fill), force = TRUE)
+        #unlink(c(tmp_in, tmp_fill), force = TRUE)
       }
     }
 
@@ -616,6 +698,7 @@ landscape_function <- function(
     if (file.exists(final_path)) try(unlink(final_path), silent = TRUE)
     file.rename(tmp_final, final_path)
     outputs[[lyr_name]] <- final_path
+    unlink(c(tmp_in, tmp_fill), force = TRUE)
 
     # record stats
     gap_count_vec[i] <- gap_count
@@ -650,7 +733,7 @@ landscape_function <- function(
   attr(df, "tile_dir") <- if (keep_tiles) tile_root else NULL
   attr(df, "run_params") <- list(
     what = what, lm_args = lm_args, rasterize_engine = rasterize_engine,
-    n_workers = n_workers, os_type = os_type, buffer_m = buffer_m,
+    n_workers = n_workers, buffer_m = buffer_m,
     gdal_opts = gdal_final, write_datatype = safe_datatype(write_datatype),
     NAflag = if (is.null(NAflag) || is.na(NAflag)) infer_default_naflag(safe_datatype(write_datatype)) else NAflag,
     skip_existing = skip_existing,
