@@ -67,7 +67,6 @@ Returns a compact <strong>data.frame</strong> with per-layer stats and timing.</
 <span>  buffer_m <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  rasterize_engine <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"fasterize"</span>, <span class="st">"terra"</span><span class="op">)</span>,</span>
 <span>  n_workers <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  os_type <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  future_max_size <span class="op">=</span> <span class="fl">4</span> <span class="op">*</span> <span class="fl">1024</span><span class="op">^</span><span class="fl">3</span>,</span>
 <span>  gdal_opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"COMPRESS=LZW"</span>, <span class="st">"TILED=YES"</span>, <span class="st">"BIGTIFF=IF_SAFER"</span><span class="op">)</span>,</span>
 <span>  write_datatype <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -143,10 +142,6 @@ Returns a compact <strong>data.frame</strong> with per-layer stats and timing.</
 
 <dt id="arg-n-workers">n_workers<a class="anchor" aria-label="anchor" href="#arg-n-workers"></a></dt>
 <dd><p>Integer; <code>1</code> = sequential.</p></dd>
-
-
-<dt id="arg-os-type">os_type<a class="anchor" aria-label="anchor" href="#arg-os-type"></a></dt>
-<dd><p><code>"auto","windows","mac","linux","slurm"</code> (default <code>"auto"</code>).</p></dd>
 
 
 <dt id="arg-future-max-size">future_max_size<a class="anchor" aria-label="anchor" href="#arg-future-max-size"></a></dt>

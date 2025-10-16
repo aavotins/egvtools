@@ -13,9 +13,9 @@ The buffer_mode determines how radii are assigned:
 "dense": Buffers the best-matching pts100*.parquet (prefers pts100_sauzeme.parquet)
 for each tile by radii_dense (default: 500, 1250, 3000, 10000 m).
 "sparse": Uses a file to radius mapping. Default mapping:
-pts100_sauzeme.parquet to c(500, 1250)
-pts300_sauzeme.parquet to 3000
-pts1000_sauzeme.parquet to 10000
+"pts100_sauzeme.parquet" to c(500, 1250)
+"pts300_sauzeme.parquet" to 3000
+"pts1000_sauzeme.parquet" to 10000
 You can override this via mapping_sparse (named list or data.frame with columns file, radius).
 
 "specified": You provide points_path and either
@@ -36,9 +36,9 @@ The buffer_mode determines how radii are assigned:
 "dense": Buffers the best-matching pts100*.parquet (prefers pts100_sauzeme.parquet)
 for each tile by radii_dense (default: 500, 1250, 3000, 10000 m).
 "sparse": Uses a file to radius mapping. Default mapping:
-pts100_sauzeme.parquet to c(500, 1250)
-pts300_sauzeme.parquet to 3000
-pts1000_sauzeme.parquet to 10000
+"pts100_sauzeme.parquet" to c(500, 1250)
+"pts300_sauzeme.parquet" to 3000
+"pts1000_sauzeme.parquet" to 10000
 You can override this via mapping_sparse (named list or data.frame with columns file, radius).
 
 "specified": You provide points_path and either
@@ -85,9 +85,9 @@ buffer_radius (uniform, one or more fixed radii) or radius_field
 <li><p><strong>tileid</strong> = unique value of <code>split_field</code> (default "tks50km") inside the input file</p></li>
 </ul><p>The <code>buffer_mode</code> determines how radii are assigned:</p><ul><li><p><strong>"dense"</strong>: Buffers the best-matching <code>pts100*.parquet</code> (prefers <code>pts100_sauzeme.parquet</code>)
 for each tile by <code>radii_dense</code> (default: 500, 1250, 3000, 10000 m).</p></li>
-<li><p><strong>"sparse"</strong>: Uses a file to radius mapping. Default mapping:</p><ul><li><p><code>pts100_sauzeme.parquet</code> to c(500, 1250)</p></li>
-<li><p><code>pts300_sauzeme.parquet</code> to 3000</p></li>
-<li><p><code>pts1000_sauzeme.parquet</code> to 10000
+<li><p><strong>"sparse"</strong>: Uses a file to radius mapping. Default mapping:</p><ul><li><p>"pts100_sauzeme.parquet" to c(500, 1250)</p></li>
+<li><p>"pts300_sauzeme.parquet" to 3000</p></li>
+<li><p>"pts1000_sauzeme.parquet" to 10000
 You can override this via <code>mapping_sparse</code> (named list or data.frame with columns <code>file</code>, <code>radius</code>).</p></li>
 </ul></li>
 <li><p><strong>"specified"</strong>: You provide <code>points_path</code> and either
@@ -109,7 +109,6 @@ You can override this via <code>mapping_sparse</code> (named list or data.frame 
 <span>  radius_field <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  split_field <span class="op">=</span> <span class="st">"tks50km"</span>,</span>
 <span>  n_workers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/detectCores.html" class="external-link">detectCores</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  os_type <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  future_max_mem_gb <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  overwrite <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  quiet <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -171,11 +170,6 @@ per-feature radii (meters) for "specified". If given, <code>buffer_radius</code>
 
 <dt id="arg-n-workers">n_workers<a class="anchor" aria-label="anchor" href="#arg-n-workers"></a></dt>
 <dd><p>Integer. Parallel workers. Default <code>max(1L, parallel::detectCores())</code>.</p></dd>
-
-
-<dt id="arg-os-type">os_type<a class="anchor" aria-label="anchor" href="#arg-os-type"></a></dt>
-<dd><p>Optional character to force backend plan:
-"windows", "mac", "darwin", "linux", "slurm". Default NULL becomes auto-detect.</p></dd>
 
 
 <dt id="arg-future-max-mem-gb">future_max_mem_gb<a class="anchor" aria-label="anchor" href="#arg-future-max-mem-gb"></a></dt>
