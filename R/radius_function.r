@@ -520,6 +520,7 @@ radius_function <- function(
         rm(fillable, dist_r)
 
         filter_used <- max(3L, as.integer(ceiling(as.numeric(max_att) / pix_size) * 2L))  # min clamp only
+        if (filter_used %% 2 == 0) filter_used <- filter_used + 1L
 
         temp_filled <- file.path(terra_tempdir, glue::glue("filled_{prefix}_{rad}.tif"))
         ok <- TRUE
@@ -539,6 +540,7 @@ radius_function <- function(
         if (ok && file.exists(temp_filled)) {
           proj_r <- terra::project(terra::rast(temp_filled), template_r)
           proj_r <- terra::mask(proj_r, template_r)
+          terra::readAll(proj_r)
           unlink(temp_filled)
           gap_filled <- TRUE
         }

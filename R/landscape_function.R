@@ -620,6 +620,13 @@ landscape_function <- function(
     if (isTRUE(report_gaps))     say(sprintf("[%s] Gap cells (inside template): %s", lyr_name, format(gap_count, big.mark=",")))
     if (isTRUE(report_gap_size) && !is.na(max_gap)) say(sprintf("[%s] Maximum gap width: %.3f (template units)", lyr_name, max_gap))
 
+
+    tmp_in  <- NULL
+    tmp_fill <- NULL
+    tmp_merge <- sprintf("%s._merge.%s", stem, ext)
+    on.exit(if (file.exists(tmp_merge)) try(unlink(tmp_merge), silent = TRUE), add = TRUE)
+
+
     # --- Optional Whitebox IDW fill (on the aligned, template-sized grid)
     fs_used <- NA_integer_
     if (isTRUE(fill_gaps) && !is.na(gap_count) && gap_count > 0) {
@@ -698,7 +705,12 @@ landscape_function <- function(
     if (file.exists(final_path)) try(unlink(final_path), silent = TRUE)
     file.rename(tmp_final, final_path)
     outputs[[lyr_name]] <- final_path
-    unlink(c(tmp_in, tmp_fill), force = TRUE)
+
+
+    #unlink(c(tmp_in, tmp_fill), force = TRUE)
+    for (p in c(tmp_in, tmp_fill)) {
+      if (!is.null(p) && nzchar(p) && file.exists(p)) try(unlink(p, force = TRUE), silent = TRUE)
+    }
 
     # record stats
     gap_count_vec[i] <- gap_count
