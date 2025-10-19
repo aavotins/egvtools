@@ -540,7 +540,6 @@ radius_function <- function(
         if (ok && file.exists(temp_filled)) {
           proj_r <- terra::project(terra::rast(temp_filled), template_r)
           proj_r <- terra::mask(proj_r, template_r)
-          terra::readAll(proj_r)
           unlink(temp_filled)
           gap_filled <- TRUE
         }
