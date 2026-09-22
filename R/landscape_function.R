@@ -256,10 +256,19 @@ landscape_function <- function(
   if (!id_field   %in% names(z_in)) stop("id_field '", id_field,   "' not found in zones.")
   if (!tile_field %in% names(z_in)) stop("tile_field '", tile_field, "' not found in zones.")
 
-  # CRS harmonization (WKT equality)
-  tmpl_wkt <- terra::crs(tmpl, proj = TRUE)
-  if (!identical(sf::st_crs(z_in)$wkt, tmpl_wkt)) z_in <- sf::st_transform(z_in, tmpl_wkt)
-  if (!identical(terra::crs(r_in, proj = TRUE), tmpl_wkt)) r_in <- terra::project(r_in, tmpl, method = "near")
+  # CRS harmonization
+  # Keeping the template CRS in WKT form. `proj = TRUE` would return a
+  # deprecated PROJ string and can lose CRS information across GDAL/PROJ
+  # versions.
+  tmpl_wkt <- terra::crs(tmpl)
+
+  if (!isTRUE(terra::same.crs(terra::vect(z_in), tmpl))) {
+    z_in <- sf::st_transform(z_in, crs = tmpl_wkt)
+  }
+
+  if (!isTRUE(terra::same.crs(r_in, tmpl))) {
+    r_in <- terra::project(r_in, tmpl, method = "near")
+  }
 
   nlyr <- terra::nlyr(r_in)
   if (nlyr==1L) { stopifnot(length(out_filename)==1L, length(out_layername)==1L) } else {
