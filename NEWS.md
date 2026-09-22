@@ -2,3 +2,4 @@
 
 * Initial development version.
 * Added unit tests.
+* Added `generalized_radius_function()`.

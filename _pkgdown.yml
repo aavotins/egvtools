@@ -39,6 +39,7 @@ reference:
       - input2egv
       - landscape_function
       - radius_function
+      - generalized_radius_function
   - title: Reproducibility helpers
     desc: Inputs, tiling, and reproducible scaffolding
     contents:

@@ -117,6 +117,10 @@ intermediate wrapper:
 - `distance2egv()` — distances to features in inputs, summarised to EGV
   resolution with optional gap filling at the edges;
 
+- `generalized_radius_function()` - multi-scale zonal statistics
+  (dense/sparse) for user defined zones, following naming convention of
+  `tiled_buffers()`;
+
 - `landscape_function()` — landscape-level per-zone metrics, tiled.
 
 In this package we use various geodata. Vector data need to be
@@ -132,10 +136,9 @@ Every other function ending with `*egv()` and `landscape_*()` and
 `radius_*()` functions create standartised and harmonised EGVs.
 
 Functions ending with `*egv()` and `landscape_*()` function operate at
-EGV cell resolution. While `radius_function()` creates output matching
-EGV template with cell values representing aggregated information from
-larger scales (at specified radius around every EGV-cells center with
-mode=“dense” or spatially sparse aggregation with mode=“sparse”).
+EGV cell resolution. While `radius_function()` and
+`generalized_radius_function()` creates output matching EGV template
+with cell values representing aggregated information from larger scales.
 
 ## Code of Conduct
 

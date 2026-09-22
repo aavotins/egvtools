@@ -5,6 +5,7 @@ export(distance2egv)
 export(download_raster_templates)
 export(download_vector_templates)
 export(downscale2egv)
+export(generalized_radius_function)
 export(input2egv)
 export(landscape_function)
 export(polygon2input)
@@ -124,6 +125,7 @@ importFrom(terra,
   res,
   resample,
   same.crs,
+  terraOptions,
   vrt,
   writeRaster
 )
