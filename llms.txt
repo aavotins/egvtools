@@ -1,0 +1,190 @@
+# egvtools: High-resolution Ecogeographical Variable Workflows
+
+`egvtools` provides a coherent set of wrappers and utilities that make
+large-scale **EGV** creation reproducible and pleasant on real datasets.
+The package leans on robust building blocks—`terra`, `sf`, `sfarrow`,
+`exactextractr`, and `whitebox`—and standardizes I/O, naming
+conventions, and multi-scale zonal statistics so your pipelines are
+repeatable across machines and projects.
+
+The package was developed to simply our work in project “HiQBioDiv:
+High-resolution quantification of biodiversity for conservation and
+management” funded by the Latvian Council of Science (Ref.
+No. VPP-VARAM-DABA-2024/1-0002) and to ease reproduction of our work.
+Five of the functions are strictly for replication, while others are
+useful for wider audience (see documentation and
+[articles](https://aavotins.github.io/egvtools/)).
+
+Athough all georeferenced data can be considered geodata, in this
+material we use the following terms in the order listed below in our
+workflows:
+
+- **raw geodata** - considered as raw data obtained for a harmonised
+  description of the environment. This may include tables with
+  coordinates, raster or vector data. It can be anything that has been
+  or can be used to create ecogeographical variables, with or without
+  slight processing.
+
+- **geodata product** - processed raw geodata that have undegone heavy
+  modifications, e.g. spatial overlays and combinations of different
+  sets of raw geodata, and are used as input data. In this document,
+  geodata products are categorical raster layers that match the CRS and
+  the pixel locations of input data. When split by categories, they
+  become input data. The processing step of creating geodata products is
+  necessary when decisions about the order of spatial overlays are
+  important. For example, in a high-resolution pixel, there can only be
+  water or forest, if the edge between water and forest need to be
+  calculated.
+
+- **input data** or **input layers** - very-high resolution (multiple
+  times higher than that used for ecogeographical variables) raster data
+  that are the direct input for the creation of most of the
+  ecogeographical variables. The creation of such layers is particularly
+  useful alongside geodata products, as dealing with border misalignment
+  or decisions regarding the order of spatial o verlays, as well as
+  simple geoprocessing, is much faster with raster data.
+
+- **ecogeographical variables (EGVs)** - this is the final product of
+  the workflow describing environment for statistical analysis
+  (e.g. species distribution modelling). They are suitable also for
+  publishing due to standadisation of the values. In other words, these
+  are standardised landscape ecological variables in the form of
+  high-resolution raster layers.
+
+## Installation
+
+You can install the development version of egvtools from
+[GitHub](https://github.com/) with:
+
+``` r
+
+# install.packages("pak")
+pak::pak("aavotins/egvtools")
+```
+
+## Usage
+
+Functions in this package can be devided in two parts with extra
+intermediate wrapper:
+
+1.  helper functions to prepare analysis templates for reproduction:
+
+- [`download_raster_templates()`](https://aavotins.github.io/egvtools/reference/download_raster_templates.md)
+  — fetch template rasters (from Zenodo repository);
+
+- [`download_vector_templates()`](https://aavotins.github.io/egvtools/reference/download_vector_templates.md)
+  — fetch template vector grids/points (from Zenodo repository);
+
+- [`tile_vector_grid()`](https://aavotins.github.io/egvtools/reference/tile_vector_grid.md)
+  — tile template (vector) grid for chunked processing;
+
+- [`tiled_buffers()`](https://aavotins.github.io/egvtools/reference/tiled_buffers.md)
+  — precompute buffered tiles for multiple radii;
+
+- [`radius_function()`](https://aavotins.github.io/egvtools/reference/radius_function.md)
+  — multi-scale zonal statistics (dense/sparse). Currently hard coded to
+  our filenames;
+
+2.  intermediate wrapper around
+    [`terra::ifel()`](https://rspatial.github.io/terra/reference/ifelse.html):
+
+- [`create_backgrounds()`](https://aavotins.github.io/egvtools/reference/create_backgrounds.md)
+  — build consistent background rasters, guarding spatial cover,
+  resolution, coordinate reference system, exact pixel matching, etc.;
+
+3.  core analysis functions - small workflows, that are easily
+    generalizable to other areas or usecases. Every function guards
+    spatial cover, resolution, coordinate reference system, exact pixel
+    matching, etc.:
+
+- [`polygon2input()`](https://aavotins.github.io/egvtools/reference/polygon2input.md)
+  — rasterize polygons to ultra-high-resolution template, handle
+  background/mask;
+
+- [`input2egv()`](https://aavotins.github.io/egvtools/reference/input2egv.md)
+  — normalize/align ultra-high-resolution inputs to broader-resolution
+  EGV output rasters with guards to template;
+
+- [`downscale2egv()`](https://aavotins.github.io/egvtools/reference/downscale2egv.md)
+  — downscale coarse rasters to template grid and optionally smooth with
+  IDW;
+
+- [`distance2egv()`](https://aavotins.github.io/egvtools/reference/distance2egv.md)
+  — distances to features in inputs, summarised to EGV resolution with
+  optional gap filling at the edges;
+
+- [`landscape_function()`](https://aavotins.github.io/egvtools/reference/landscape_function.md)
+  — landscape-level per-zone metrics, tiled.
+
+In this package we use various geodata. Vector data need to be
+polygonised before
+[`polygon2input()`](https://aavotins.github.io/egvtools/reference/polygon2input.md).
+Multiple outputs of this function can be combined before creating EGVs.
+
+We use term *input* for raster layers of higher resolution (exact
+multiple) than EGV used for species distribution analysis. These layers
+are for geodata harmonisation and standartisation in a *much* faster and
+memory-friendly approach.
+
+Every other function ending with `*egv()` and `landscape_*()` and
+`radius_*()` functions create standartised and harmonised EGVs.
+
+Functions ending with `*egv()` and `landscape_*()` function operate at
+EGV cell resolution. While
+[`radius_function()`](https://aavotins.github.io/egvtools/reference/radius_function.md)
+creates output matching EGV template with cell values representing
+aggregated information from larger scales (at specified radius around
+every EGV-cells center with mode=“dense” or spatially sparse aggregation
+with mode=“sparse”).
+
+## Code of Conduct
+
+Please note that the egvtools project is released with a [Contributor
+Code of
+Conduct](https://contributor-covenant.org/version/2/1/CODE_OF_CONDUCT.html).
+By contributing to this project, you agree to abide by its terms.
+
+# Package index
+
+## Core workflow
+
+Generalizable EGV creators/wrappers
+
+- [`polygon2input()`](https://aavotins.github.io/egvtools/reference/polygon2input.md)
+  : Rasterize polygons to a template grid, optionally restrict & cover
+  gaps, then write GeoTIFF
+- [`downscale2egv()`](https://aavotins.github.io/egvtools/reference/downscale2egv.md)
+  : Downscale & Align a Raster to a Template, with optional gap fill &
+  IDW smoothing
+- [`distance2egv()`](https://aavotins.github.io/egvtools/reference/distance2egv.md)
+  : Distance-to-class on the EGV grid
+- [`input2egv()`](https://aavotins.github.io/egvtools/reference/input2egv.md)
+  : Convert an input raster to an EGV-aligned raster
+- [`landscape_function()`](https://aavotins.github.io/egvtools/reference/landscape_function.md)
+  : Compute landscape-level metrics per zone (tiled), merge, analyze
+  gaps, optionally fill with IDW, and write rasters
+- [`radius_function()`](https://aavotins.github.io/egvtools/reference/radius_function.md)
+  : Extract and Rasterize Summary Statistics from Buffered Radii Using
+  exactextractr
+
+## Reproducibility helpers
+
+Inputs, tiling, and reproducible scaffolding
+
+- [`download_raster_templates()`](https://aavotins.github.io/egvtools/reference/download_raster_templates.md)
+  : Download and unpack raster templates
+- [`download_vector_templates()`](https://aavotins.github.io/egvtools/reference/download_vector_templates.md)
+  : Download and unpack vector templates (points/grids/gpkg)
+- [`tile_vector_grid()`](https://aavotins.github.io/egvtools/reference/tile_vector_grid.md)
+  : Tile a vector grid into parquet tiles
+- [`tiled_buffers()`](https://aavotins.github.io/egvtools/reference/tiled_buffers.md)
+  : Create buffered tiles from point layers
+- [`create_backgrounds()`](https://aavotins.github.io/egvtools/reference/create_backgrounds.md)
+  : Create constant-background rasters from a directory of GeoTIFFs
+
+## Internals
+
+- [`egvtools`](https://aavotins.github.io/egvtools/reference/egvtools.md)
+  [`egvtools-package`](https://aavotins.github.io/egvtools/reference/egvtools.md)
+  : egvtools: High-resolution Ecogeographical Variable Workflows
+
