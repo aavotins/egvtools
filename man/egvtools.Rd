@@ -88,5 +88,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Andris Avotiņš \email{andris.avotins@lu.lv}
 
+Authors:
+\itemize{
+  \item Andris Avotiņš \email{andris.avotins@lu.lv}
+}
+
 }
 \keyword{internal}
