@@ -12,6 +12,8 @@ Language: en
 Roxygen: list(markdown = TRUE)
 URL: https://aavotins.github.io/egvtools/, https://github.com/aavotins/egvtools
 BugReports: https://github.com/aavotins/egvtools/issues
+Depends:
+    R (>= 4.1.0)
 Imports: 
     curl,
     dplyr,

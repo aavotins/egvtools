@@ -70,15 +70,26 @@ make_test_points_sf <- function(crs = 3059) {
 }
 
 expect_same_grid <- function(x, y) {
+  # Compare the raster grid independently of the CRS representation.
+  # GDAL/PROJ may serialize an equivalent CRS differently across platforms
+  # (notably Windows versus macOS/Linux), so a single compareGeom(crs = TRUE)
+  # assertion can be unnecessarily platform-sensitive.
   testthat::expect_true(
     terra::compareGeom(
       x, y,
       stopOnError = FALSE,
-      crs = TRUE,
+      crs = FALSE,
       ext = TRUE,
       rowcol = TRUE,
       res = TRUE
-    )
+    ),
+    info = "Raster extent, dimensions, or resolution differ"
+  )
+
+  # Test CRS equivalence semantically rather than comparing serialized WKT text.
+  testthat::expect_true(
+    terra::same.crs(x, y),
+    info = "Raster coordinate reference systems are not equivalent"
   )
 }
 
