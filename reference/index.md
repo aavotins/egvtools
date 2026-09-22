@@ -20,6 +20,8 @@ Generalizable EGV creators/wrappers
 - [`radius_function()`](https://aavotins.github.io/egvtools/reference/radius_function.md)
   : Extract and Rasterize Summary Statistics from Buffered Radii Using
   exactextractr
+- [`generalized_radius_function()`](https://aavotins.github.io/egvtools/reference/generalized_radius_function.md)
+  : Extract and Rasterize Buffered-Radius Summary Statistics
 
 ## Reproducibility helpers
 

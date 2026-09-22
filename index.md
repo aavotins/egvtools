@@ -113,6 +113,11 @@ intermediate wrapper:
   — distances to features in inputs, summarised to EGV resolution with
   optional gap filling at the edges;
 
+- [`generalized_radius_function()`](https://aavotins.github.io/egvtools/reference/generalized_radius_function.md) -
+  multi-scale zonal statistics (dense/sparse) for user defined zones,
+  following naming convention of
+  [`tiled_buffers()`](https://aavotins.github.io/egvtools/reference/tiled_buffers.md);
+
 - [`landscape_function()`](https://aavotins.github.io/egvtools/reference/landscape_function.md)
   — landscape-level per-zone metrics, tiled.
 
@@ -132,10 +137,10 @@ Every other function ending with `*egv()` and `landscape_*()` and
 Functions ending with `*egv()` and `landscape_*()` function operate at
 EGV cell resolution. While
 [`radius_function()`](https://aavotins.github.io/egvtools/reference/radius_function.md)
+and
+[`generalized_radius_function()`](https://aavotins.github.io/egvtools/reference/generalized_radius_function.md)
 creates output matching EGV template with cell values representing
-aggregated information from larger scales (at specified radius around
-every EGV-cells center with mode=“dense” or spatially sparse aggregation
-with mode=“sparse”).
+aggregated information from larger scales.
 
 ## Code of Conduct
 

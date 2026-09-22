@@ -95,12 +95,13 @@
 <li><p><code><a href="reference/input2egv.html">input2egv()</a></code> — normalize/align ultra-high-resolution inputs to broader-resolution EGV output rasters with guards to template;</p></li>
 <li><p><code><a href="reference/downscale2egv.html">downscale2egv()</a></code> — downscale coarse rasters to template grid and optionally smooth with IDW;</p></li>
 <li><p><code><a href="reference/distance2egv.html">distance2egv()</a></code> — distances to features in inputs, summarised to EGV resolution with optional gap filling at the edges;</p></li>
+<li><p><code><a href="reference/generalized_radius_function.html">generalized_radius_function()</a></code> - multi-scale zonal statistics (dense/sparse) for user defined zones, following naming convention of <code><a href="reference/tiled_buffers.html">tiled_buffers()</a></code>;</p></li>
 <li><p><code><a href="reference/landscape_function.html">landscape_function()</a></code> — landscape-level per-zone metrics, tiled.</p></li>
 </ul>
 <p>In this package we use various geodata. Vector data need to be polygonised before <code><a href="reference/polygon2input.html">polygon2input()</a></code>. Multiple outputs of this function can be combined before creating EGVs.</p>
 <p>We use term <em>input</em> for raster layers of higher resolution (exact multiple) than EGV used for species distribution analysis. These layers are for geodata harmonisation and standartisation in a <em>much</em> faster and memory-friendly approach.</p>
 <p>Every other function ending with <code>*egv()</code> and <code>landscape_*()</code> and <code>radius_*()</code> functions create standartised and harmonised EGVs.</p>
-<p>Functions ending with <code>*egv()</code> and <code>landscape_*()</code> function operate at EGV cell resolution. While <code><a href="reference/radius_function.html">radius_function()</a></code> creates output matching EGV template with cell values representing aggregated information from larger scales (at specified radius around every EGV-cells center with mode=“dense” or spatially sparse aggregation with mode=“sparse”).</p>
+<p>Functions ending with <code>*egv()</code> and <code>landscape_*()</code> function operate at EGV cell resolution. While <code><a href="reference/radius_function.html">radius_function()</a></code> and <code><a href="reference/generalized_radius_function.html">generalized_radius_function()</a></code> creates output matching EGV template with cell values representing aggregated information from larger scales.</p>
 </div>
 <div class="section level2">
 <h2 id="code-of-conduct">Code of Conduct<a class="anchor" aria-label="anchor" href="#code-of-conduct"></a>
