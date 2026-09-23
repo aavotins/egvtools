@@ -8,7 +8,7 @@
 An \code{sf} object containing polygon geometries and grid identifiers:
 \itemize{
 \item \code{rinda500}: identificator of 500 m grid cell.
-\item \code{tks50}: identificator of topographic map's 50 km page.
+\item \code{tks50km}: identificator of topographic map's 50 km page.
 \item \code{x}: \verb{sf geometry} field.
 }
 }

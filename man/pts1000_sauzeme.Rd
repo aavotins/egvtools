@@ -8,7 +8,7 @@
 An \code{sf} object containing point geometries and grid identifiers:
 \itemize{
 \item \code{ID1km}: identificator of 1 km grid cell.
-\item \code{tks50}: identificator of topographic map's 50 km page.
+\item \code{tks50km}: identificator of topographic map's 50 km page.
 \item \code{geometry}: \verb{sf geometry} field.
 }
 }

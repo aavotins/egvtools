@@ -10,7 +10,7 @@ An \code{sf} object containing point geometries and grid identifiers:
 \item \code{rinda300}: identificator of 300 m grid cell.
 \item \code{X}: EPSG:3059 x-coordinate of centroid.
 \item \code{Y}: EPSG:3059 y-coordinate of centroid.
-\item \code{tks50}: identificator of topographic map's 50 km page.
+\item \code{tks50km}: identificator of topographic map's 50 km page.
 \item \code{x}: \verb{sf geometry} field.
 }
 }

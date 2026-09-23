@@ -9,7 +9,7 @@ An \code{sf} object containing polygon geometries and grid identifiers:
 \itemize{
 \item \code{id}: identificator of 100 m grid cell.
 \item \code{yes}: indicator for location in terrestrial Latvia (all the cells contain value \code{1}).
-\item \code{tks50}: identificator of topographic map's 50 km page.
+\item \code{tks50km}: identificator of topographic map's 50 km page.
 \item \code{rinda300}: identificator of 300 m grid cell.
 \item \code{ID1km}: identificator of 1 km grid cell.
 \item \code{rinda500}: identificator of 500 m grid cell.

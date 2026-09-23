@@ -4,3 +4,4 @@
 * Added unit tests.
 * Added `generalized_radius_function()`.
 * Added data.
+* Added vignette.
