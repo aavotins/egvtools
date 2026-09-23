@@ -414,6 +414,34 @@ landscape_function <- function(
         return(list(lc=lc,se=se,sc=sc,sj=sj))
       }
 
+      # Keep only zones whose interiors overlap the landscape extent.
+      # st_intersects() alone is insufficient because polygons merely touching
+      # the raster boundary would also be retained.
+      r_ext_sf <- sf::st_as_sf(
+        terra::as.polygons(
+          terra::ext(r_crop),
+          crs = terra::crs(r_crop)
+        )
+      )
+
+      has_area_overlap <- lengths(
+        sf::st_relate(
+          tile_sf,
+          r_ext_sf,
+          pattern = "T********"
+        )
+      ) > 0L
+
+      tile_sf <- tile_sf[has_area_overlap, , drop = FALSE]
+
+      if (nrow(tile_sf) == 0L) {
+        for (i in seq_len(nlyr)) {
+          sc[[paste0("scrop_", out_layername[i])]] <-
+            sc[[paste0("scrop_", out_layername[i])]] + 1L
+        }
+        return(list(lc=lc,se=se,sc=sc,sj=sj))
+      }
+
       r_crop_path <- file.path(tile_root, paste0("landscape_", safe_id, ".tif"))
       terra::writeRaster(r_crop, r_crop_path, overwrite = TRUE)
       r_crop_r <- raster::stack(r_crop_path)

@@ -8,7 +8,7 @@
 #'
 #' - `yes`: indicator for location in terrestrial Latvia (all the cells contain value `1`).
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `rinda300`: identificator of 300 m grid cell.
 #'
@@ -31,7 +31,7 @@
 #'
 #' - `ID1km`: identificator of 1 km grid cell.
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `geometry`: `sf geometry` field.
 #'
@@ -52,7 +52,7 @@
 #'
 #' - `Y`: EPSG:3059 y-coordinate of centroid.
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `x`: `sf geometry` field.
 #'
@@ -73,7 +73,7 @@
 #'
 #' - `Y`: EPSG:3059 y-coordinate of centroid.
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `x`: `sf geometry` field.
 #'
@@ -92,7 +92,7 @@
 #'
 #' - `yes`: indicator for location in terrestrial Latvia (all the cells contain value `1`).
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `rinda300`: identificator of 300 m grid cell.
 #'
@@ -117,7 +117,7 @@
 #'
 #' - `ID1km`: identificator of 1 km grid cell.
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `geometry`: `sf geometry` field.
 #'
@@ -149,7 +149,7 @@
 #'
 #' - `rinda500`: identificator of 500 m grid cell.
 #'
-#' - `tks50`: identificator of topographic map's 50 km page.
+#' - `tks50km`: identificator of topographic map's 50 km page.
 #'
 #' - `x`: `sf geometry` field.
 #'
