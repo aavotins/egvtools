@@ -18,6 +18,8 @@
 #'
 #' - `geom`: `sf geometry` field.
 #'
+#' @keywords datasets
+#'
 #' @source Derived from a reduced section of the Latvian 100-m harmonization grid.
 "pts100_sauzeme"
 
@@ -32,6 +34,8 @@
 #' - `tks50`: identificator of topographic map's 50 km page.
 #'
 #' - `geometry`: `sf geometry` field.
+#'
+#' @keywords datasets
 #'
 #' @source Derived from a reduced section of the Latvian 1000-m harmonization grid.
 "pts1000_sauzeme"
@@ -52,6 +56,8 @@
 #'
 #' - `x`: `sf geometry` field.
 #'
+#' @keywords datasets
+#'
 #' @source Derived from a reduced section of the Latvian 300-m harmonization grid.
 "pts300_sauzeme"
 
@@ -70,6 +76,8 @@
 #' - `tks50`: identificator of topographic map's 50 km page.
 #'
 #' - `x`: `sf geometry` field.
+#'
+#' @keywords datasets
 #'
 #' @source Derived from a reduced section of the Latvian 500-m harmonization grid.
 "pts500_sauzeme"
@@ -94,6 +102,8 @@
 #'
 #' - `geom`: `sf geometry` field.
 #'
+#' @keywords datasets
+#'
 #' @source Derived from a reduced section of the Latvian 100-m harmonization grid.
 "tikls100_sauzeme"
 
@@ -111,6 +121,8 @@
 #'
 #' - `geometry`: `sf geometry` field.
 #'
+#' @keywords datasets
+#'
 #' @source Derived from a reduced section of the Latvian 1000-m harmonization grid.
 "tikls1km_sauzeme"
 
@@ -123,6 +135,8 @@
 #' - `rinda300`: identificator of 300 m grid cell.
 #'
 #' - `x`: `sf geometry` field.
+#'
+#' @keywords datasets
 #'
 #' @source Derived from a reduced section of the Latvian 300-m harmonization grid.
 "tikls300_sauzeme"
@@ -138,6 +152,8 @@
 #' - `tks50`: identificator of topographic map's 50 km page.
 #'
 #' - `x`: `sf geometry` field.
+#'
+#' @keywords datasets
 #'
 #' @source Derived from a reduced section of the Latvian 500-m harmonization grid.
 "tikls500_sauzeme"
@@ -157,6 +173,8 @@
 #' - `Shape_Area`: redundant field from original database.
 #'
 #' - `Shape`: `sf geometry` field.
+#'
+#' @keywords datasets
 #'
 #' @source Derived from a reduced section of the Latvian 500-m harmonization grid.
 "tks93_50km"
@@ -180,6 +198,8 @@
 #' - `Shape_Area`: redundant field from original database.
 #'
 #' - `geom`: `sf geometry` field.
+#'
+#' @keywords datasets
 #'
 #' @source Derived from a reduced section of the Latvian 500-m harmonization grid.
 "clc18"

@@ -51,6 +51,12 @@ reference:
   - title: Internals
     contents:
       - has_keyword("internal")
+  - title: "Datasets"
+    desc: >
+      Spatial reference datasets used by egvtools for examples,
+      testing, and spatial processing workflows.
+  - contents:
+      - has_keyword("datasets")
 
 development:
   mode: auto
