@@ -17,7 +17,7 @@ An `sf` object containing polygon geometries and grid identifiers:
 - `yes`: indicator for location in terrestrial Latvia (all the cells
   contain value `1`).
 
-- `tks50`: identificator of topographic map's 50 km page.
+- `tks50km`: identificator of topographic map's 50 km page.
 
 - `rinda300`: identificator of 300 m grid cell.
 

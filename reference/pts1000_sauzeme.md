@@ -14,7 +14,7 @@ An `sf` object containing point geometries and grid identifiers:
 
 - `ID1km`: identificator of 1 km grid cell.
 
-- `tks50`: identificator of topographic map's 50 km page.
+- `tks50km`: identificator of topographic map's 50 km page.
 
 - `geometry`: `sf geometry` field.
 

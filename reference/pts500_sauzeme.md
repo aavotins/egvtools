@@ -18,7 +18,7 @@ An `sf` object containing point geometries and grid identifiers:
 
 - `Y`: EPSG:3059 y-coordinate of centroid.
 
-- `tks50`: identificator of topographic map's 50 km page.
+- `tks50km`: identificator of topographic map's 50 km page.
 
 - `x`: `sf geometry` field.
 

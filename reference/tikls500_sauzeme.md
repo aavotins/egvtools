@@ -14,7 +14,7 @@ An `sf` object containing polygon geometries and grid identifiers:
 
 - `rinda500`: identificator of 500 m grid cell.
 
-- `tks50`: identificator of topographic map's 50 km page.
+- `tks50km`: identificator of topographic map's 50 km page.
 
 - `x`: `sf geometry` field.
 
