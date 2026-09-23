@@ -195,3 +195,35 @@ Inputs, tiling, and reproducible scaffolding
   [`egvtools-package`](https://aavotins.github.io/egvtools/reference/egvtools.md)
   : egvtools: High-resolution Ecogeographical Variable Workflows
 
+## Datasets
+
+Spatial reference datasets used by egvtools for examples, testing, and
+spatial processing workflows.
+
+- [`clc18`](https://aavotins.github.io/egvtools/reference/clc18.md) :
+  Example Corine Land Cover (2018) polygons
+- [`pts1000_sauzeme`](https://aavotins.github.io/egvtools/reference/pts1000_sauzeme.md)
+  : Example 1000-m grid points
+- [`pts100_sauzeme`](https://aavotins.github.io/egvtools/reference/pts100_sauzeme.md)
+  : Example 100-m grid points
+- [`pts300_sauzeme`](https://aavotins.github.io/egvtools/reference/pts300_sauzeme.md)
+  : Example 300-m grid points
+- [`pts500_sauzeme`](https://aavotins.github.io/egvtools/reference/pts500_sauzeme.md)
+  : Example 500-m grid points
+- [`tikls100_sauzeme`](https://aavotins.github.io/egvtools/reference/tikls100_sauzeme.md)
+  : Example 100-m grid polygons
+- [`tikls1km_sauzeme`](https://aavotins.github.io/egvtools/reference/tikls1km_sauzeme.md)
+  : Example 1000-m grid polygons
+- [`tikls300_sauzeme`](https://aavotins.github.io/egvtools/reference/tikls300_sauzeme.md)
+  : Example 300-m grid polygons
+- [`tikls500_sauzeme`](https://aavotins.github.io/egvtools/reference/tikls500_sauzeme.md)
+  : Example 500-m grid points
+- [`tks93_50km`](https://aavotins.github.io/egvtools/reference/tks93_50km.md)
+  : Example 50-km map tiles
+
+# Articles
+
+### All vignettes
+
+- [Introduction to
+  egvtools](https://aavotins.github.io/egvtools/articles/introduction.md):

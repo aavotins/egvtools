@@ -3,9 +3,12 @@
 <url><loc>https://aavotins.github.io/egvtools/CODE_OF_CONDUCT.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/LICENSE-text.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/LICENSE.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/articles/index.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/articles/introduction.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/authors.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/index.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/news/index.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/clc18.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/create_backgrounds.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/distance2egv.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/download_raster_templates.html</loc></url>
@@ -17,8 +20,17 @@
 <url><loc>https://aavotins.github.io/egvtools/reference/input2egv.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/landscape_function.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/polygon2input.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/pts1000_sauzeme.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/pts100_sauzeme.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/pts300_sauzeme.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/pts500_sauzeme.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/radius_function.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/tikls100_sauzeme.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/tikls1km_sauzeme.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/tikls300_sauzeme.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/tikls500_sauzeme.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/tile_vector_grid.html</loc></url>
 <url><loc>https://aavotins.github.io/egvtools/reference/tiled_buffers.html</loc></url>
+<url><loc>https://aavotins.github.io/egvtools/reference/tks93_50km.html</loc></url>
 </urlset>
 
