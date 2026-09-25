@@ -20,14 +20,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(egvtools)
-library(sf)
-library(terra)
-library(sfarrow)
-library(landscapemetrics)
-```
-
 # Overview
 
 `egvtools` provides tools for reproducible preparation of high-resolution
@@ -36,6 +28,17 @@ is primarily intended for ecological applications in which environmental
 information from multiple sources must be transformed into spatially aligned,
 analysis-ready raster layers, for example as predictors in species distribution
 models (SDMs).
+
+The package was developed within the project HiQBioDiv: High-resolution
+quantification of biodiversity for conservation and management, funded by the
+Latvian Council of Science (Ref. No. VPP-VARAM-DABA-2024/1-0002).
+
+The development version can be installed from GitHub with:
+
+```{r install, eval = FALSE}
+# install.packages("remotes")
+remotes::install_github("aavotins/egvtools")
+```
 
 Species distribution models relate observations of species occurrence or
 abundance to environmental conditions and are widely used to describe
@@ -65,16 +68,6 @@ multi-scale EGVs for species distribution modelling in Latvia
 grids, the underlying functions can also be applied to other study areas when
 suitable reference grids and raster templates are provided.
 
-The package was developed within the project HiQBioDiv: High-resolution
-quantification of biodiversity for conservation and management, funded by the
-Latvian Council of Science (Ref. No. VPP-VARAM-DABA-2024/1-0002).
-
-The development version can be installed from GitHub with:
-
-```{r install, eval = FALSE}
-# install.packages("remotes")
-remotes::install_github("aavotins/egvtools")
-```
 
 Spatial data processing terminology varies among disciplines and projects.
 For clarity, `egvtools` uses the following operational terms throughout its
@@ -84,21 +77,21 @@ than formal or universal GIS data categories.
  - **Raw geodata** are source data obtained to describe environmental
 conditions. They may be tables containing coordinates, raster datasets, or
 vector datasets such as points, lines, and polygons. Raw geodata may already
-have undergone basic preprocessing by their data provider, but they have not
+have undergone basic preprocessing by the data provider, but they have not
 yet been harmonized specifically for the EGV workflow.
 
  - **Geodata products** are intermediate datasets derived from one or more raw
 geodata sources through substantial spatial processing. Such processing may
 include overlays, reclassification, prioritization among overlapping
 datasets, or combination of several data sources. In the workflows described
-here, geodata products are commonly categorical raster layers with a defined
+here, geodata products are commonly raster layers with a defined
 CRS, resolution, origin, and cell alignment.
 
 Creating a geodata product can be important when overlapping source datasets
 require explicit decisions about which spatial class takes precedence. For
 example, a high-resolution raster cell cannot simultaneously represent both
 open water and forest when a subsequent analysis requires an unambiguous
-forest--water boundary.
+forest-water boundary.
 
  - **Input data or input layers** are high-resolution raster layers used
 directly to calculate EGVs. Their spatial resolution is commonly finer than
@@ -106,6 +99,7 @@ the final EGV resolution. Working with harmonized raster inputs makes many
 repeated operations considerably simpler and faster because decisions about
 projection, alignment, overlaps, and class precedence have already been
 resolved.
+
  - **Ecogeographical variables (EGVs)** are the analysis-ready environmental
 variables produced by the workflow. They describe environmental conditions,
 landscape composition, configuration, distance, diversity, or related
@@ -124,13 +118,23 @@ climate raster may be converted directly from raw geodata to an EGV, whereas
 several overlapping land-cover datasets may first need to be combined into a
 geodata product.
 
+In this example we will use following packages:
+
+
+```{r setup}
+library(egvtools)
+library(sf)
+library(terra)
+library(sfarrow)
+library(landscapemetrics)
+```
+
 
 # Example data
 
 
 Several small example datasets are included with `egvtools`. They are intended
-to demonstrate the workflow without requiring the full national datasets used
-in production analyses.
+to demonstrate the workflow without requiring the use of full national datasets.
 
 The examples below use harmonized raster and vector grids, grid centroids,
 climate data, and Land Use Land Cover (LULC) information represented by
@@ -273,6 +277,11 @@ spatial tiles and reassembling the results afterwards.
 identifier. This allows subsequent calculations to operate on manageable
 subsets instead of repeatedly loading the complete national grid.
 
+In `egvtools` we use `GeoParquet` for its speed and memory efficiency. 
+However, it is not yet a stable geodata format, therefore warnings are expected. So far 
+we have had no issues with this, but caution is suggested - for long-term preservance of 
+geodata, we suggest them to be stored in `GeoPackage`.
+
 ```{r tile-vector-grid}
 
 tiles_grid <- file.path(
@@ -307,7 +316,8 @@ be important in species distribution modelling [@bradter2013].
 `tiled_buffers()` prepares reusable buffer geometries around grid-cell
 centroids. Because these geometries are created once and subsequently reused
 for many input variables, this can substantially reduce duplicated spatial
-processing.
+processing. The following example prepares polygons with radii 500 m and 3000 m 
+around the centroid of every 100 m grid cell.
 
 ```{r tiled-buffers}
 in_dir <- system.file(
@@ -346,7 +356,13 @@ tiled_buffers(
 With `buffer_mode = "dense"`, buffers are created around the full set of
 reference points for each requested radius. The appropriate radii should be
 chosen according to the ecological processes and taxa being studied rather
-than interpreted as universally applicable spatial scales.
+than interpreted as universally applicable spatial scales. `buffer_mode = "sparse"` 
+prepares sparser buffers (500 m and 1250 m around the centroid of every 100 m 
+grid cell, 3000 m around the centroid of every 300 m grid cell and 10000 m around 
+the centroid of every 1 km grid cell) to reproduce workflow used in project 
+HiQBioDiv. And the `buffer_mode = "specified"` can be used for user specified 
+relation between grids, centroids and buffers (see `?egvtools::tiled_buffers` 
+for example).
 
 ### Creating background rasters
 
@@ -402,7 +418,7 @@ functions can also be used independently.
 ## Polygons to harmonized inputs
 
 Many environmental datasets are supplied as polygons, whereas repeated
-high-resolution calculations are often more efficient once categorical
+high-resolution calculations are often more efficient once the 
 information has been converted to a common raster grid.
 
 `polygon2input()` rasterizes vector features using an existing raster template.
@@ -464,9 +480,11 @@ input2egv(input=forests,
           outlocation = work_dir,
           outfilename="Forest_prop.tif",
           layername="Forest_prop",
-          plot_gaps = TRUE,
-          plot_final = TRUE
+          plot_gaps = FALSE,
+          plot_final = FALSE
           )
+terra::plot(terra::rast(file.path(work_dir,"/Forest_prop.tif")))
+
 ```
 
 `input2egv()` summarizes the high-resolution input within cells of the EGV
@@ -499,9 +517,10 @@ df <- downscale2egv(
   fill_gaps     = TRUE,
   smooth        = TRUE,
   smooth_radius_km = 10,
-  plot_result   = TRUE
+  plot_result   = FALSE
 )
 print(df)
+terra::plot(terra::rast(file.path(work_dir,"/climate_egv.tif")))
 ```
 
 The term downscaling here refers to producing a raster on the finer EGV grid;
@@ -526,10 +545,12 @@ distance2egv(
   outfilename   = "dist_forest.tif",
   layername     = "dist_forest",
   use_whitebox  = TRUE,
-  plot_result   = TRUE,
-  plot_gaps     = TRUE,
+  plot_result   = FALSE,
+  plot_gaps     = FALSE,
   terra_todisk  = TRUE
 )
+
+terra::plot(terra::rast(file.path(work_dir,"/dist_forest.tif")))
 ```
 
 In this example, cells representing forest are treated as the target object and
@@ -582,6 +603,13 @@ Multiple scales are useful for evaluating scale dependence, but they can also
 produce correlated predictors and should therefore be considered explicitly
 during subsequent model selection.
 
+In `generalized_radius_functions()` as well as in any other tiles using 
+function, input raster is cropped to extent 1 km larger, than the extent of 
+tile + largest radius involved in calculations to avoid egde effects, e.g. 
+for a radius of 10 km, the extent of input rasters will be 11 km around the tile. 
+This of course does not deal with missing values, e.g. accross the border of studied 
+region. Those are treated with `na.rm = TRUE` (not included in analysis).
+
 ## Landscape diversity
 
 Landscape composition can also be summarized using metrics developed in
@@ -622,6 +650,9 @@ number of classes and/or their evenness increases [@hesselbarth2019].
 
 Consequently, this EGV represents compositional diversity rather than the area
 of any particular habitat class.
+
+Argument `what = ...` can be any function from `landscapemetrics` returning one 
+value per zone and per input layer.
 
 ## Edge lengths
 
@@ -671,5 +702,9 @@ As with other landscape metrics, edge length is scale-dependent. Its value is
 affected by both the resolution of the categorical input raster and the size
 of the analysis zone. These should therefore be reported alongside the
 resulting EGV.
+
+Calculation of any landscape metric is slow. Therefore we suggest calculating them 
+at predifined zones, e.g. total edge length per analysis grid cell, and using 
+`generalized_radius_function()` to aggregate values from desired neighbourhoods.
 
 # References
