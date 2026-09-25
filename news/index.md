@@ -1,5 +1,9 @@
 # Changelog
 
+## egvtools 0.1.0
+
+- First initial realease of stable version.
+
 ## egvtools 0.0.0.9000
 
 - Initial development version.

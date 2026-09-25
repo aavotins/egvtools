@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">egvtools</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Unreleased version">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -57,14 +57,6 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://aavotins.github.io/egvtools/">egvtools</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; terra 1.9.50</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/wcjochem/sfarrow" class="external-link">sfarrow</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatialecology.github.io/landscapemetrics/" class="external-link">landscapemetrics</a></span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
@@ -75,6 +67,14 @@ applications in which environmental information from multiple sources
 must be transformed into spatially aligned, analysis-ready raster
 layers, for example as predictors in species distribution models
 (SDMs).</p>
+<p>The package was developed within the project HiQBioDiv:
+High-resolution quantification of biodiversity for conservation and
+management, funded by the Latvian Council of Science (Ref.
+No. VPP-VARAM-DABA-2024/1-0002).</p>
+<p>The development version can be installed from GitHub with:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"aavotins/egvtools"</span><span class="op">)</span></span></code></pre></div>
 <p>Species distribution models relate observations of species occurrence
 or abundance to environmental conditions and are widely used to describe
 species-environment relationships and predict distributions across space
@@ -104,14 +104,6 @@ Latvia <span class="citation">(<a href="#ref-avotins2022">Avotins et al.
 template grids, the underlying functions can also be applied to other
 study areas when suitable reference grids and raster templates are
 provided.</p>
-<p>The package was developed within the project HiQBioDiv:
-High-resolution quantification of biodiversity for conservation and
-management, funded by the Latvian Council of Science (Ref.
-No. VPP-VARAM-DABA-2024/1-0002).</p>
-<p>The development version can be installed from GitHub with:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("remotes")</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"aavotins/egvtools"</span><span class="op">)</span></span></code></pre></div>
 <p>Spatial data processing terminology varies among disciplines and
 projects. For clarity, <code>egvtools</code> uses the following
 operational terms throughout its documentation. These describe stages of
@@ -121,7 +113,7 @@ categories.</p>
 <li><p><strong>Raw geodata</strong> are source data obtained to describe
 environmental conditions. They may be tables containing coordinates,
 raster datasets, or vector datasets such as points, lines, and polygons.
-Raw geodata may already have undergone basic preprocessing by their data
+Raw geodata may already have undergone basic preprocessing by the data
 provider, but they have not yet been harmonized specifically for the EGV
 workflow.</p></li>
 <li><p><strong>Geodata products</strong> are intermediate datasets
@@ -129,24 +121,22 @@ derived from one or more raw geodata sources through substantial spatial
 processing. Such processing may include overlays, reclassification,
 prioritization among overlapping datasets, or combination of several
 data sources. In the workflows described here, geodata products are
-commonly categorical raster layers with a defined CRS, resolution,
-origin, and cell alignment.</p></li>
+commonly raster layers with a defined CRS, resolution, origin, and cell
+alignment.</p></li>
 </ul>
 <p>Creating a geodata product can be important when overlapping source
 datasets require explicit decisions about which spatial class takes
 precedence. For example, a high-resolution raster cell cannot
 simultaneously represent both open water and forest when a subsequent
-analysis requires an unambiguous forest–water boundary.</p>
+analysis requires an unambiguous forest-water boundary.</p>
 <ul>
-<li>
-<strong>Input data or input layers</strong> are high-resolution
+<li><p><strong>Input data or input layers</strong> are high-resolution
 raster layers used directly to calculate EGVs. Their spatial resolution
 is commonly finer than the final EGV resolution. Working with harmonized
 raster inputs makes many repeated operations considerably simpler and
 faster because decisions about projection, alignment, overlaps, and
-class precedence have already been resolved.</li>
-<li>
-<strong>Ecogeographical variables (EGVs)</strong> are the
+class precedence have already been resolved.</p></li>
+<li><p><strong>Ecogeographical variables (EGVs)</strong> are the
 analysis-ready environmental variables produced by the workflow. They
 describe environmental conditions, landscape composition, configuration,
 distance, diversity, or related characteristics on a common spatial
@@ -154,7 +144,7 @@ grid. EGVs can consequently be combined directly with occurrence or
 other ecological data in statistical analyses, including species
 distribution models. Multi-scale EGVs can additionally represent
 environmental characteristics surrounding a focal grid cell at several
-spatial scales <span class="citation">(<a href="#ref-avotins2022">Avotins et al. 2022</a>; <a href="#ref-bradter2013">Bradter et al. 2013</a>)</span>.</li>
+spatial scales <span class="citation">(<a href="#ref-avotins2022">Avotins et al. 2022</a>; <a href="#ref-bradter2013">Bradter et al. 2013</a>)</span>.</p></li>
 </ul>
 <p>In simplified form, the workflow can therefore be represented as:</p>
 <p><strong>raw geodata -&gt; geodata products -&gt; harmonized input
@@ -163,14 +153,22 @@ layers -&gt; EGVs</strong></p>
 continuous climate raster may be converted directly from raw geodata to
 an EGV, whereas several overlapping land-cover datasets may first need
 to be combined into a geodata product.</p>
+<p>In this example we will use following packages:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://aavotins.github.io/egvtools/">egvtools</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatial.github.io/sf/" class="external-link">sf</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Linking to GEOS 3.12.1, GDAL 3.8.4, PROJ 9.4.0; sf_use_s2() is TRUE</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rspatial.org/" class="external-link">terra</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; terra 1.9.50</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/wcjochem/sfarrow" class="external-link">sfarrow</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-spatialecology.github.io/landscapemetrics/" class="external-link">landscapemetrics</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example-data">Example data<a class="anchor" aria-label="anchor" href="#example-data"></a>
 </h2>
 <p>Several small example datasets are included with
 <code>egvtools</code>. They are intended to demonstrate the workflow
-without requiring the full national datasets used in production
-analyses.</p>
+without requiring the use of full national datasets.</p>
 <p>The examples below use harmonized raster and vector grids, grid
 centroids, climate data, and Land Use Land Cover (LULC) information
 represented by (CORINE Land Cover 2018)[<a href="https://land.copernicus.eu/en/products/corine-land-cover/clc2018" class="external-link uri">https://land.copernicus.eu/en/products/corine-land-cover/clc2018</a>].</p>
@@ -300,6 +298,11 @@ afterwards.</p>
 an existing tile identifier. This allows subsequent calculations to
 operate on manageable subsets instead of repeatedly loading the complete
 national grid.</p>
+<p>In <code>egvtools</code> we use <code>GeoParquet</code> for its speed
+and memory efficiency. However, it is not yet a stable geodata format,
+therefore warnings are expected. So far we have had no issues with this,
+but caution is suggested - for long-term preservance of geodata, we
+suggest them to be stored in <code>GeoPackage</code>.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">tiles_grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span></span>
@@ -364,7 +367,9 @@ distribution modelling <span class="citation">(<a href="#ref-bradter2013">Bradte
 <p><code><a href="../reference/tiled_buffers.html">tiled_buffers()</a></code> prepares reusable buffer geometries
 around grid-cell centroids. Because these geometries are created once
 and subsequently reused for many input variables, this can substantially
-reduce duplicated spatial processing.</p>
+reduce duplicated spatial processing. The following example prepares
+polygons with radii 500 m and 3000 m around the centroid of every 100 m
+grid cell.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">in_dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>  <span class="st">"extdata"</span>,</span>
@@ -447,12 +452,18 @@ reduce duplicated spatial processing.</p>
 <span><span class="co">#&gt; specification may change and does not yet make stability promises.  We</span></span>
 <span><span class="co">#&gt; do not yet recommend using this in a production setting unless you are</span></span>
 <span><span class="co">#&gt; able to rewrite your Parquet/Feather files.</span></span>
-<span><span class="co">#&gt; tiled_buffers complete. Wrote  8  /  8  files at  /tmp/RtmpIADrnF/egvtools_vignette/TemplateGridPoints/tiles</span></span></code></pre></div>
+<span><span class="co">#&gt; tiled_buffers complete. Wrote  8  /  8  files at  /tmp/Rtmp0F5d78/egvtools_vignette/TemplateGridPoints/tiles</span></span></code></pre></div>
 <p>With <code>buffer_mode = "dense"</code>, buffers are created around
 the full set of reference points for each requested radius. The
 appropriate radii should be chosen according to the ecological processes
 and taxa being studied rather than interpreted as universally applicable
-spatial scales.</p>
+spatial scales. <code>buffer_mode = "sparse"</code> prepares sparser
+buffers (500 m and 1250 m around the centroid of every 100 m grid cell,
+3000 m around the centroid of every 300 m grid cell and 10000 m around
+the centroid of every 1 km grid cell) to reproduce workflow used in
+project HiQBioDiv. And the <code>buffer_mode = "specified"</code> can be
+used for user specified relation between grids, centroids and buffers
+(see <code><a href="../reference/tiled_buffers.html">?egvtools::tiled_buffers</a></code> for example).</p>
 </div>
 <div class="section level4">
 <h4 id="creating-background-rasters">Creating background rasters<a class="anchor" aria-label="anchor" href="#creating-background-rasters"></a>
@@ -493,13 +504,13 @@ distinguish true zero values from missing data.</p>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  terra_todisk <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Found 3 raster(s). Writing to: /tmp/RtmpIADrnF/egvtools_vignette/TemplateRasters </span></span>
+<span><span class="co">#&gt; Found 3 raster(s). Writing to: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters </span></span>
 <span><span class="co">#&gt; [1/3] Processing: LV100m_10km.tif </span></span>
-<span><span class="co">#&gt;   -&gt; Wrote: /tmp/RtmpIADrnF/egvtools_vignette/TemplateRasters/nulls_LV100m_10km.tif </span></span>
+<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters/nulls_LV100m_10km.tif </span></span>
 <span><span class="co">#&gt; [2/3] Processing: LV10m_10km.tif </span></span>
-<span><span class="co">#&gt;   -&gt; Wrote: /tmp/RtmpIADrnF/egvtools_vignette/TemplateRasters/nulls_LV10m_10km.tif </span></span>
+<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters/nulls_LV10m_10km.tif </span></span>
 <span><span class="co">#&gt; [3/3] Processing: LV500m_10km.tif </span></span>
-<span><span class="co">#&gt;   -&gt; Wrote: /tmp/RtmpIADrnF/egvtools_vignette/TemplateRasters/nulls_LV500m_10km.tif </span></span>
+<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters/nulls_LV500m_10km.tif </span></span>
 <span><span class="co">#&gt; Done. Total elapsed: 0.6 sec</span></span></code></pre></div>
 </div>
 </div>
@@ -514,8 +525,8 @@ pipeline. Individual functions can also be used independently.</p>
 <h3 id="polygons-to-harmonized-inputs">Polygons to harmonized inputs<a class="anchor" aria-label="anchor" href="#polygons-to-harmonized-inputs"></a>
 </h3>
 <p>Many environmental datasets are supplied as polygons, whereas
-repeated high-resolution calculations are often more efficient once
-categorical information has been converted to a common raster grid.</p>
+repeated high-resolution calculations are often more efficient once the
+information has been converted to a common raster grid.</p>
 <p><code><a href="../reference/polygon2input.html">polygon2input()</a></code> rasterizes vector features using an
 existing raster template. The template determines the CRS, resolution,
 extent, origin, and cell locations, ensuring that the resulting input
@@ -536,7 +547,7 @@ raster is compatible with other layers in the workflow.</p>
 <span><span class="co">#&gt; Missing cells before restrict/cover: 0 </span></span>
 <span><span class="co">#&gt; Missing cells after all processing: 0</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/clc18-1.png" class="r-plt" alt="" width="672"></p>
-<pre><code><span><span class="co">#&gt; Wrote: /tmp/RtmpIADrnF/egvtools_vignette/clc_classes.tif</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/clc_classes.tif</span></span></code></pre>
 <p>Here, CLC polygons are converted to a categorical raster at the
 resolution of the high-resolution input template. The resulting raster
 is an intermediate input layer rather than the final EGV.</p>
@@ -575,9 +586,11 @@ raster.</p>
 <span>          outlocation <span class="op">=</span> <span class="va">work_dir</span>,</span>
 <span>          outfilename<span class="op">=</span><span class="st">"Forest_prop.tif"</span>,</span>
 <span>          layername<span class="op">=</span><span class="st">"Forest_prop"</span>,</span>
-<span>          plot_gaps <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>          plot_final <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>          <span class="op">)</span></span></code></pre></div>
+<span>          plot_gaps <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>          plot_final <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>          <span class="op">)</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">work_dir</span>,<span class="st">"/Forest_prop.tif"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="introduction_files/figure-html/input2egv-1.png" class="r-plt" alt="" width="672"></p>
 <p><code><a href="../reference/input2egv.html">input2egv()</a></code> summarizes the high-resolution input within
 cells of the EGV template. With
 <code>summary_function = "average"</code> and a binary input consisting
@@ -609,16 +622,18 @@ filling and spatial smoothing.</p>
 <span>  fill_gaps     <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  smooth        <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  smooth_radius_km <span class="op">=</span> <span class="fl">10</span>,</span>
-<span>  plot_result   <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  plot_result   <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Projecting (bilinear) and masking to template ... </span></span>
 <span><span class="co">#&gt; No gaps detected; skipping gap filling. </span></span>
-<span><span class="co">#&gt; Wrote: /tmp/RtmpIADrnF/egvtools_vignette/climate_egv.tif</span></span>
+<span><span class="co">#&gt; Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/climate_egv.tif</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                              output gap_count max_gap_distance</span></span>
-<span><span class="co">#&gt; 1 /tmp/RtmpIADrnF/egvtools_vignette/climate_egv.tif         0               NA</span></span>
+<span><span class="co">#&gt; 1 /tmp/Rtmp0F5d78/egvtools_vignette/climate_egv.tif         0               NA</span></span>
 <span><span class="co">#&gt;   filter_size_cells smoothed smoothing_radius_used elapsed_sec</span></span>
-<span><span class="co">#&gt; 1                NA     TRUE                 10000    1.456799</span></span></code></pre></div>
+<span><span class="co">#&gt; 1                NA     TRUE                 10000    1.452248</span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">work_dir</span>,<span class="st">"/climate_egv.tif"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="introduction_files/figure-html/downscale2egv-1.png" class="r-plt" alt="" width="672"></p>
 <p>The term downscaling here refers to producing a raster on the finer
 EGV grid; it should not be interpreted as creating new independent
 environmental information at that finer resolution. The effective
@@ -643,12 +658,15 @@ selected environmental features.</p>
 <span>  outfilename   <span class="op">=</span> <span class="st">"dist_forest.tif"</span>,</span>
 <span>  layername     <span class="op">=</span> <span class="st">"dist_forest"</span>,</span>
 <span>  use_whitebox  <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  plot_result   <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  plot_gaps     <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  plot_result   <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  plot_gaps     <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  terra_todisk  <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Computing distance with WhiteboxTools ... </span></span>
-<span><span class="co">#&gt; Align: aggregate (mean) by 10x10x, then resample (near).</span></span></code></pre></div>
+<span><span class="co">#&gt; Align: aggregate (mean) by 10x10x, then resample (near).</span></span>
+<span></span>
+<span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">work_dir</span>,<span class="st">"/dist_forest.tif"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><img src="introduction_files/figure-html/distance2egv-1.png" class="r-plt" alt="" width="672"></p>
 <p>In this example, cells representing forest are treated as the target
 object and the output gives the distance to forest on the EGV grid. Such
 variables can be useful when ecological responses are associated with
@@ -711,6 +729,14 @@ interpretation. Multiple scales are useful for evaluating scale
 dependence, but they can also produce correlated predictors and should
 therefore be considered explicitly during subsequent model
 selection.</p>
+<p>In <code>generalized_radius_functions()</code> as well as in any
+other tiles using function, input raster is cropped to extent 1 km
+larger, than the extent of tile + largest radius involved in
+calculations to avoid egde effects, e.g.  for a radius of 10 km, the
+extent of input rasters will be 11 km around the tile. This of course
+does not deal with missing values, e.g. accross the border of studied
+region. Those are treated with <code>na.rm = TRUE</code> (not included
+in analysis).</p>
 </div>
 <div class="section level3">
 <h3 id="landscape-diversity">Landscape diversity<a class="anchor" aria-label="anchor" href="#landscape-diversity"></a>
@@ -743,13 +769,13 @@ interface to metrics implemented by <code>landscapemetrics</code> <span class="c
 <span><span class="co">#&gt; [Landscape_diversity] Gap cells (inside template): 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res_tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            layer_name                                               output_path</span></span>
-<span><span class="co">#&gt; 1 Landscape_diversity /tmp/RtmpIADrnF/egvtools_vignette/Landscape_diversity.tif</span></span>
+<span><span class="co">#&gt; 1 Landscape_diversity /tmp/Rtmp0F5d78/egvtools_vignette/Landscape_diversity.tif</span></span>
 <span><span class="co">#&gt;   tiles_written tiles_skipped_existing tiles_skipped_empty_crop</span></span>
 <span><span class="co">#&gt; 1             4                      0                        0</span></span>
 <span><span class="co">#&gt;   tiles_skipped_empty_join merge_skipped gap_count max_gap_distance</span></span>
 <span><span class="co">#&gt; 1                        0         FALSE         0               NA</span></span>
 <span><span class="co">#&gt;   filter_size_cells_used gap_filled n_tiles n_zones n_layers elapsed_sec</span></span>
-<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    41.08408</span></span>
+<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    40.59045</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">res_tbl</span><span class="op">$</span><span class="va">output_path</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/landscape-diversity-1.png" class="r-plt" alt="" width="672"></p>
 <p>Here, <code>lsm_l_shdi</code> calculates Shannon’s Diversity Index
@@ -762,6 +788,9 @@ as the number of classes and/or their evenness increases <span class="citation">
 2019</a>)</span>.</p>
 <p>Consequently, this EGV represents compositional diversity rather than
 the area of any particular habitat class.</p>
+<p>Argument <code>what = ...</code> can be any function from
+<code>landscapemetrics</code> returning one value per zone and per input
+layer.</p>
 </div>
 <div class="section level3">
 <h3 id="edge-lengths">Edge lengths<a class="anchor" aria-label="anchor" href="#edge-lengths"></a>
@@ -803,13 +832,13 @@ analysis zone.</p>
 <span><span class="co">#&gt; [edges_forests] Gap cells (inside template): 0</span></span>
 <span><span class="va">rez_edges</span></span>
 <span><span class="co">#&gt;      layer_name                                         output_path</span></span>
-<span><span class="co">#&gt; 1 edges_forests /tmp/RtmpIADrnF/egvtools_vignette/edges_forests.tif</span></span>
+<span><span class="co">#&gt; 1 edges_forests /tmp/Rtmp0F5d78/egvtools_vignette/edges_forests.tif</span></span>
 <span><span class="co">#&gt;   tiles_written tiles_skipped_existing tiles_skipped_empty_crop</span></span>
 <span><span class="co">#&gt; 1             4                      0                        0</span></span>
 <span><span class="co">#&gt;   tiles_skipped_empty_join merge_skipped gap_count max_gap_distance</span></span>
 <span><span class="co">#&gt; 1                        0         FALSE         0               NA</span></span>
 <span><span class="co">#&gt;   filter_size_cells_used gap_filled n_tiles n_zones n_layers elapsed_sec</span></span>
-<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    43.05895</span></span>
+<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    40.56422</span></span>
 <span><span class="va">edges</span><span class="op">=</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">work_dir</span>,<span class="st">"edges_forests.tif"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/edges-1.png" class="r-plt" alt="" width="672"></p>
@@ -824,6 +853,10 @@ the sampling unit.</p>
 value is affected by both the resolution of the categorical input raster
 and the size of the analysis zone. These should therefore be reported
 alongside the resulting EGV.</p>
+<p>Calculation of any landscape metric is slow. Therefore we suggest
+calculating them at predifined zones, e.g. total edge length per
+analysis grid cell, and using <code><a href="../reference/generalized_radius_function.html">generalized_radius_function()</a></code>
+to aggregate values from desired neighbourhoods.</p>
 </div>
 </div>
 <div class="section level2">
