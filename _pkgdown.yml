@@ -1,6 +1,8 @@
 url: https://aavotins.github.io/egvtools/
 template:
   bootstrap: 5
+  params:
+    google_site_verification: "googlea35e9ac9ed2dc267.html"
 
 repo:
   url:
