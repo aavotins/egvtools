@@ -453,7 +453,7 @@ grid cell.</p>
 <span><span class="co">#&gt; specification may change and does not yet make stability promises.  We</span></span>
 <span><span class="co">#&gt; do not yet recommend using this in a production setting unless you are</span></span>
 <span><span class="co">#&gt; able to rewrite your Parquet/Feather files.</span></span>
-<span><span class="co">#&gt; tiled_buffers complete. Wrote  8  /  8  files at  /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateGridPoints/tiles</span></span></code></pre></div>
+<span><span class="co">#&gt; tiled_buffers complete. Wrote  8  /  8  files at  /tmp/Rtmp86OIew/egvtools_vignette/TemplateGridPoints/tiles</span></span></code></pre></div>
 <p>With <code>buffer_mode = "dense"</code>, buffers are created around
 the full set of reference points for each requested radius. The
 appropriate radii should be chosen according to the ecological processes
@@ -505,14 +505,14 @@ distinguish true zero values from missing data.</p>
 <span>  overwrite <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  terra_todisk <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; Found 3 raster(s). Writing to: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters </span></span>
+<span><span class="co">#&gt; Found 3 raster(s). Writing to: /tmp/Rtmp86OIew/egvtools_vignette/TemplateRasters </span></span>
 <span><span class="co">#&gt; [1/3] Processing: LV100m_10km.tif </span></span>
-<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters/nulls_LV100m_10km.tif </span></span>
+<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmp86OIew/egvtools_vignette/TemplateRasters/nulls_LV100m_10km.tif </span></span>
 <span><span class="co">#&gt; [2/3] Processing: LV10m_10km.tif </span></span>
-<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters/nulls_LV10m_10km.tif </span></span>
+<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmp86OIew/egvtools_vignette/TemplateRasters/nulls_LV10m_10km.tif </span></span>
 <span><span class="co">#&gt; [3/3] Processing: LV500m_10km.tif </span></span>
-<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters/nulls_LV500m_10km.tif </span></span>
-<span><span class="co">#&gt; Done. Total elapsed: 0.7 sec</span></span></code></pre></div>
+<span><span class="co">#&gt;   -&gt; Wrote: /tmp/Rtmp86OIew/egvtools_vignette/TemplateRasters/nulls_LV500m_10km.tif </span></span>
+<span><span class="co">#&gt; Done. Total elapsed: 0.5 sec</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -548,7 +548,7 @@ raster is compatible with other layers in the workflow.</p>
 <span><span class="co">#&gt; Missing cells before restrict/cover: 0 </span></span>
 <span><span class="co">#&gt; Missing cells after all processing: 0</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/clc18-1.png" class="r-plt" alt="" width="672"></p>
-<pre><code><span><span class="co">#&gt; Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/clc_classes.tif</span></span></code></pre>
+<pre><code><span><span class="co">#&gt; Wrote: /tmp/Rtmp86OIew/egvtools_vignette/clc_classes.tif</span></span></code></pre>
 <p>Here, CLC polygons are converted to a categorical raster at the
 resolution of the high-resolution input template. The resulting raster
 is an intermediate input layer rather than the final EGV.</p>
@@ -627,12 +627,12 @@ filling and spatial smoothing.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Projecting (bilinear) and masking to template ... </span></span>
 <span><span class="co">#&gt; No gaps detected; skipping gap filling. </span></span>
-<span><span class="co">#&gt; Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/climate_egv.tif</span></span>
+<span><span class="co">#&gt; Wrote: /tmp/Rtmp86OIew/egvtools_vignette/climate_egv.tif</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                              output gap_count max_gap_distance</span></span>
-<span><span class="co">#&gt; 1 /tmp/Rtmpv2v3T6/egvtools_vignette/climate_egv.tif         0               NA</span></span>
+<span><span class="co">#&gt; 1 /tmp/Rtmp86OIew/egvtools_vignette/climate_egv.tif         0               NA</span></span>
 <span><span class="co">#&gt;   filter_size_cells smoothed smoothing_radius_used elapsed_sec</span></span>
-<span><span class="co">#&gt; 1                NA     TRUE                 10000    1.483833</span></span>
+<span><span class="co">#&gt; 1                NA     TRUE                 10000    1.320084</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">work_dir</span>,<span class="st">"/climate_egv.tif"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/downscale2egv-1.png" class="r-plt" alt="" width="672"></p>
 <p>The term downscaling here refers to producing a raster on the finer
@@ -770,13 +770,13 @@ interface to metrics implemented by <code>landscapemetrics</code> <span class="c
 <span><span class="co">#&gt; [Landscape_diversity] Gap cells (inside template): 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">res_tbl</span><span class="op">)</span></span>
 <span><span class="co">#&gt;            layer_name                                               output_path</span></span>
-<span><span class="co">#&gt; 1 Landscape_diversity /tmp/Rtmpv2v3T6/egvtools_vignette/Landscape_diversity.tif</span></span>
+<span><span class="co">#&gt; 1 Landscape_diversity /tmp/Rtmp86OIew/egvtools_vignette/Landscape_diversity.tif</span></span>
 <span><span class="co">#&gt;   tiles_written tiles_skipped_existing tiles_skipped_empty_crop</span></span>
 <span><span class="co">#&gt; 1             4                      0                        0</span></span>
 <span><span class="co">#&gt;   tiles_skipped_empty_join merge_skipped gap_count max_gap_distance</span></span>
 <span><span class="co">#&gt; 1                        0         FALSE         0               NA</span></span>
 <span><span class="co">#&gt;   filter_size_cells_used gap_filled n_tiles n_zones n_layers elapsed_sec</span></span>
-<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    42.39676</span></span>
+<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    34.15338</span></span>
 <span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="va">res_tbl</span><span class="op">$</span><span class="va">output_path</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/landscape-diversity-1.png" class="r-plt" alt="" width="672"></p>
 <p>Here, <code>lsm_l_shdi</code> calculates Shannon’s Diversity Index
@@ -833,13 +833,13 @@ analysis zone.</p>
 <span><span class="co">#&gt; [edges_forests] Gap cells (inside template): 0</span></span>
 <span><span class="va">rez_edges</span></span>
 <span><span class="co">#&gt;      layer_name                                         output_path</span></span>
-<span><span class="co">#&gt; 1 edges_forests /tmp/Rtmpv2v3T6/egvtools_vignette/edges_forests.tif</span></span>
+<span><span class="co">#&gt; 1 edges_forests /tmp/Rtmp86OIew/egvtools_vignette/edges_forests.tif</span></span>
 <span><span class="co">#&gt;   tiles_written tiles_skipped_existing tiles_skipped_empty_crop</span></span>
 <span><span class="co">#&gt; 1             4                      0                        0</span></span>
 <span><span class="co">#&gt;   tiles_skipped_empty_join merge_skipped gap_count max_gap_distance</span></span>
 <span><span class="co">#&gt; 1                        0         FALSE         0               NA</span></span>
 <span><span class="co">#&gt;   filter_size_cells_used gap_filled n_tiles n_zones n_layers elapsed_sec</span></span>
-<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    42.77961</span></span>
+<span><span class="co">#&gt; 1                     NA      FALSE       4    1681        1    34.02666</span></span>
 <span><span class="va">edges</span><span class="op">=</span><span class="fu">terra</span><span class="fu">::</span><span class="fu"><a href="https://rspatial.github.io/terra/reference/rast.html" class="external-link">rast</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">work_dir</span>,<span class="st">"edges_forests.tif"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rspatial.github.io/terra/reference/plot.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">edges</span><span class="op">)</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/edges-1.png" class="r-plt" alt="" width="672"></p>
