@@ -432,7 +432,7 @@ tiled_buffers(
 #> specification may change and does not yet make stability promises.  We
 #> do not yet recommend using this in a production setting unless you are
 #> able to rewrite your Parquet/Feather files.
-#> tiled_buffers complete. Wrote  8  /  8  files at  /tmp/Rtmp0F5d78/egvtools_vignette/TemplateGridPoints/tiles
+#> tiled_buffers complete. Wrote  8  /  8  files at  /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateGridPoints/tiles
 ```
 
 With `buffer_mode = "dense"`, buffers are created around the full set of
@@ -489,14 +489,14 @@ create_backgrounds(
   overwrite = TRUE,
   terra_todisk = TRUE
 )
-#> Found 3 raster(s). Writing to: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters 
+#> Found 3 raster(s). Writing to: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters 
 #> [1/3] Processing: LV100m_10km.tif 
-#>   -> Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters/nulls_LV100m_10km.tif 
+#>   -> Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters/nulls_LV100m_10km.tif 
 #> [2/3] Processing: LV10m_10km.tif 
-#>   -> Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters/nulls_LV10m_10km.tif 
+#>   -> Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters/nulls_LV10m_10km.tif 
 #> [3/3] Processing: LV500m_10km.tif 
-#>   -> Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/TemplateRasters/nulls_LV500m_10km.tif 
-#> Done. Total elapsed: 0.6 sec
+#>   -> Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/TemplateRasters/nulls_LV500m_10km.tif 
+#> Done. Total elapsed: 0.7 sec
 ```
 
 ## Core analysis functionality
@@ -538,7 +538,7 @@ polygon2input(vector_data = clc18,
 
 ![](introduction_files/figure-html/clc18-1.png)
 
-    #> Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/clc_classes.tif
+    #> Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/clc_classes.tif
 
 Here, CLC polygons are converted to a categorical raster at the
 resolution of the high-resolution input template. The resulting raster
@@ -629,12 +629,12 @@ df <- downscale2egv(
 )
 #> Projecting (bilinear) and masking to template ... 
 #> No gaps detected; skipping gap filling. 
-#> Wrote: /tmp/Rtmp0F5d78/egvtools_vignette/climate_egv.tif
+#> Wrote: /tmp/Rtmpv2v3T6/egvtools_vignette/climate_egv.tif
 print(df)
 #>                                              output gap_count max_gap_distance
-#> 1 /tmp/Rtmp0F5d78/egvtools_vignette/climate_egv.tif         0               NA
+#> 1 /tmp/Rtmpv2v3T6/egvtools_vignette/climate_egv.tif         0               NA
 #>   filter_size_cells smoothed smoothing_radius_used elapsed_sec
-#> 1                NA     TRUE                 10000    1.452248
+#> 1                NA     TRUE                 10000    1.483833
 terra::plot(terra::rast(file.path(work_dir,"/climate_egv.tif")))
 ```
 
@@ -792,13 +792,13 @@ res_tbl <- landscape_function(
 #> [Landscape_diversity] Gap cells (inside template): 0
 print(res_tbl)
 #>            layer_name                                               output_path
-#> 1 Landscape_diversity /tmp/Rtmp0F5d78/egvtools_vignette/Landscape_diversity.tif
+#> 1 Landscape_diversity /tmp/Rtmpv2v3T6/egvtools_vignette/Landscape_diversity.tif
 #>   tiles_written tiles_skipped_existing tiles_skipped_empty_crop
 #> 1             4                      0                        0
 #>   tiles_skipped_empty_join merge_skipped gap_count max_gap_distance
 #> 1                        0         FALSE         0               NA
 #>   filter_size_cells_used gap_filled n_tiles n_zones n_layers elapsed_sec
-#> 1                     NA      FALSE       4    1681        1    40.59045
+#> 1                     NA      FALSE       4    1681        1    42.39676
 terra::plot(terra::rast(res_tbl$output_path))
 ```
 
@@ -862,13 +862,13 @@ rez_edges <- landscape_function(
 #> [edges_forests] Gap cells (inside template): 0
 rez_edges
 #>      layer_name                                         output_path
-#> 1 edges_forests /tmp/Rtmp0F5d78/egvtools_vignette/edges_forests.tif
+#> 1 edges_forests /tmp/Rtmpv2v3T6/egvtools_vignette/edges_forests.tif
 #>   tiles_written tiles_skipped_existing tiles_skipped_empty_crop
 #> 1             4                      0                        0
 #>   tiles_skipped_empty_join merge_skipped gap_count max_gap_distance
 #> 1                        0         FALSE         0               NA
 #>   filter_size_cells_used gap_filled n_tiles n_zones n_layers elapsed_sec
-#> 1                     NA      FALSE       4    1681        1    40.56422
+#> 1                     NA      FALSE       4    1681        1    42.77961
 edges=terra::rast(file.path(work_dir,"edges_forests.tif"))
 plot(edges)
 ```
